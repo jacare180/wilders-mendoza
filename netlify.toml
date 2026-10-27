@@ -1,0 +1,15 @@
+[build]
+  publish = "public"
+  command = ""
+  # Skip the build (each production deploy costs credits) when a commit touches nothing the site uses,
+  # e.g. only CLAUDE.md. Builds anyway on a branch's first build or if the diff can't be computed.
+  ignore = "[ \"$CACHED_COMMIT_REF\" != \"$COMMIT_REF\" ] && git diff --quiet \"$CACHED_COMMIT_REF\" \"$COMMIT_REF\" -- public netlify data netlify.toml package.json"
+
+[functions]
+  node_bundler = "esbuild"
+
+# the service worker must always be fresh, or a new version of the app never reaches the phones
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
