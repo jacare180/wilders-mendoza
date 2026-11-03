@@ -57,12 +57,45 @@ async function readAll(s) {
   return { config, log, cols };
 }
 
+// One-time (meta/atividades-v1): activities get a status and carry their own price; the cost lines they replace
+// are only marked (substituidoPor), never deleted, so an older copy of the app still adds up the same total.
+const MIGRA_ATIV = [["rafting", "t-rafting"], ["payunia-guia", "t-volcanes"], ["llancanelo", "t-llancanelo"], ["cacheuta", "t-cacheuta"],
+  ["aconcagua", "t-horcones"], ["inca", "t-inca"], ["payunia-parque", "t-payunia-parque"]];
+// original group totals that are really per person; an edited line keeps its own value as a group price
+const POR_PESSOA = { rafting: [525, "BRL", 175], cacheuta: [210, "BRL", 70], aconcagua: [165000, "ARS", 55000], inca: [30000, "ARS", 10000] };
+async function migrateAtividades(s) {
+  const [trilhas, custos] = await Promise.all([s.get("col/trilhas", { type: "json" }), s.get("col/custos", { type: "json" })]);
+  const tr = trilhas || {}, cu = custos || {};
+  for (const t of Object.values(tr)) if (!t.status) t.status = "roteiro";
+  for (const [cid, tid] of MIGRA_ATIV) {
+    const c = cu[cid];
+    if (!c || c.substituidoPor) continue;
+    let t = tr[tid];
+    if (!t && tid === "t-payunia-parque") t = tr[tid] = { id: tid, tipo: "outro", nome: "La Payunia: tarifa do parque", onde: "La Payunia", km: "", desnivel: "", tempo: "",
+      nivel: 0, quem: "todos", leve: "", obs: "Paga uma vez por veículo.", dia: "d25", status: "roteiro" };
+    if (!t) continue;
+    if (t.preco == null || t.preco === "") {
+      const pp = POR_PESSOA[cid];
+      if (pp && +c.valor === pp[0] && (c.moeda || "BRL") === pp[1]) Object.assign(t, { preco: pp[2], moeda: pp[1], base: "pessoa", qtd: null });
+      else Object.assign(t, { preco: c.valor ?? null, moeda: c.moeda || "BRL", base: "grupo" });
+      Object.assign(t, { pago: !!c.pago, precoNota: c.nota || "" });
+    }
+    cu[cid] = { ...c, substituidoPor: tid };
+  }
+  await Promise.all([s.setJSON("col/trilhas", tr), s.setJSON("col/custos", cu)]);
+  await s.setJSON("meta/atividades-v1", { at: Date.now() });
+}
+
 async function state() {
   const s = store();
   let { config, log, cols } = await readAll(s);
   if (!config) {
     await writeAll(s, toStored(seed));
     await s.setJSON("meta/seeded", { at: Date.now(), versao: seed.versao });
+    await s.setJSON("meta/atividades-v1", { at: Date.now(), seed: true });
+    ({ config, log, cols } = await readAll(s));
+  } else if (!(await s.get("meta/atividades-v1", { type: "json" }))) {
+    await migrateAtividades(s);
     ({ config, log, cols } = await readAll(s));
   }
   const out = { config: config || {}, log: (log || []).slice(0, 60) };

@@ -1,6 +1,6 @@
 // Offline: the app shell and fonts come from the cache when there is no signal.
 // The trip data itself is kept by the page (localStorage), and changes made offline wait in a queue there.
-const V = "wilders-v1";
+const V = "wilders-v2";
 const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {

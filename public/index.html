@@ -219,7 +219,12 @@ h3{font-size:18px;margin:0;font-weight:700;line-height:1.25}
 .prog{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg);text-align:left;width:100%}
 .prog .t{flex:1;min-width:0}
 .prog .t b{display:block;font-size:16px}
-.prog .t small{color:var(--mute);font-size:14px}
+.prog .t small{color:var(--mute);font-size:14px;display:block}
+.prog.idea{border-style:dashed;background:transparent}
+.prog.idea .t b{color:var(--mute)}
+.prog .idea-k{color:var(--sky)!important;font-weight:700;font-size:13px!important}
+.price{font-size:16px}
+.price b{font-size:19px}
 .day-f{display:flex;align-items:center;gap:6px;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
 /* map */
 .mapbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:6px;overflow:hidden}
@@ -277,6 +282,7 @@ details.script pre{white-space:pre-wrap;font-family:var(--f-body);font-size:16px
 .facts span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .lighter{font-size:15px;background:var(--l1-soft);border-radius:10px;padding:8px 10px}
 .lighter b{color:var(--l1)}
+.trail.idea{border-style:dashed;border-width:2px}
 .trail-f{display:flex;align-items:center;gap:6px;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
 /* listas */
 .cat{margin-bottom:18px;overflow:hidden}
@@ -403,7 +409,11 @@ const sv=(d,w=2)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const I={
  hoje:sv('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
  roteiro:sv('<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8.5a3.5 3.5 0 0 0 0-7h-9a3.5 3.5 0 0 1 0-7H16"/>'),
- trilhas:sv('<path d="M3 20l6-11 4 7 3-4 5 8z"/><path d="M9 9l2 3"/>'),
+ atividades:sv('<path d="M3 20l6-11 4 7 3-4 5 8z"/><path d="M9 9l2 3"/>'),
+ wine:sv('<path d="M8 3h8l-.5 6a3.5 3.5 0 0 1-7 0zM12 12.5V20M8.5 21h7"/>'),
+ bus:sv('<rect x="4" y="4" width="16" height="13" rx="2"/><path d="M4 11h16M8 17v3M16 17v3M7.5 14h.01M16.5 14h.01"/>'),
+ ticket:sv('<path d="M4 8a2 2 0 0 0 0 4v4h16v-4a2 2 0 0 0 0-4V4H4zM14 4v12"/>'),
+ dots:sv('<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>'),
  listas:sv('<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17"/>'),
  custos:sv('<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/>'),
  hotel:sv('<path d="M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="2"/>'),
@@ -441,13 +451,16 @@ const LOGO=`<svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height=
 const RIDGE=`<svg class="ridge" viewBox="0 0 260 90" aria-hidden="true"><path d="M0 90L40 40l22 26 38-58 30 40 22-18 40 44 28-30 40 46z" fill="currentColor"/></svg>`;
 
 /* ---------- constants ---------- */
-const VIEWS=[["hoje","Hoje"],["roteiro","Roteiro"],["trilhas","Trilhas"],["listas","Listas"],["custos","Custos"],["hotel","Hotel"]];
+const VIEWS=[["hoje","Hoje"],["roteiro","Roteiro"],["atividades","Atividades"],["listas","Listas"],["custos","Custos"],["hotel","Hotel"]];
 const LEVELS=[["Sem esforço","Só chegar e olhar"],["Fácil","Serve para todos"],["Moderada","Pede fôlego e calma"],["Difícil","Longa ou com altitude"]];
 const TIPOS={reserva:"Reserva natural",camping:"Camping com serviço",montanha:"Montanha, sem serviço",parque:"Parque",hotel:"Hotel"};
 const STATUS=[["a reservar","A reservar","todo"],["pendente","Esperando resposta","wait"],["reservado","Reservado","ok"],["confirmado","Confirmado","ok"]];
 const CATS=[["docs","Documentos"],["mala","Mala"],["mercado","Mercado"],["camper","Itens do camper"]];
-const COST_CATS=[["passagens","Passagens","#3D6E8C"],["camper","Camper","#2B2623"],["combustivel","Combustível","#8E6A3A"],["pernoites","Campings e reservas","#5E7D3A"],["hotel","Hotel","#7FAFCB"],["passeios","Passeios","#B4462B"],["comida","Comida","#C98A1B"],["seguro","Seguro","#9A8B7E"]];
+const COST_CATS=[["passagens","Passagens","#3D6E8C"],["camper","Camper","#2B2623"],["combustivel","Combustível","#8E6A3A"],["pernoites","Campings e reservas","#5E7D3A"],["hotel","Hotel","#7FAFCB"],["passeios","Passeios","#B4462B"],["transporte","Transporte","#5B7F99"],["comida","Comida e vinho","#C98A1B"],["seguro","Seguro","#9A8B7E"]];
 const PRIOS=[["risco","Risco","todo"],["alta","Importante","wait"],["normal","Normal",""]];
+// activities live in the "trilhas" collection; status "ideia" stays out of the plan and the totals
+const ATIV_TIPOS=[["trilha","Trilha","atividades"],["passeio","Passeio","ticket"],["comida","Comida e vinho","wine"],["transporte","Transporte","bus"],["outro","Outro","dots"]];
+const TIPO_CUSTO={trilha:"passeios",passeio:"passeios",outro:"passeios",comida:"comida",transporte:"transporte"};
 const WD=["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
 /* ---------- state ---------- */
@@ -497,6 +510,21 @@ const stayOf=id=>D().pernoites.find(p=>p.id===id);
 const chosenHotel=()=>D().hoteis.find(h=>h.escolhido);
 const dayById=id=>days().find(x=>x.id===id);
 const trailsOf=dayId=>D().trilhas.filter(t=>t.dia===dayId);
+const isIdea=t=>t.status==="ideia";
+const tipoOf=t=>ATIV_TIPOS.find(x=>x[0]===t.tipo)||ATIV_TIPOS[4];
+const hasPrice=t=>t.preco!=null&&t.preco!==""&&!isNaN(+t.preco);
+// group total in R$: a per-person price counts once for each person going
+function ativBRL(t){if(!hasPrice(t))return null;const v=toBRL(t.preco,t.moeda||"BRL");return t.base==="pessoa"?v*(+t.qtd||nPeople()):v}
+// [main, detail]: "US$ 45 por pessoa", "R$ 702 no grupo"
+function priceParts(t){
+  if(!hasPrice(t))return["",""];
+  if(+t.preco===0)return["Grátis",""];
+  const g=ativBRL(t); const n=t.base==="pessoa"?(+t.qtd||nPeople()):nPeople(); const m=t.moeda||"BRL";
+  return t.base==="pessoa"?[`${inCur(+t.preco,m)} por pessoa`,`${brl(g)} ${n===nPeople()?"no grupo":"para "+n+(n===1?" pessoa":" pessoas")}`]
+    :[`${inCur(+t.preco,m)} no grupo`,`${m!=="BRL"?brl(g)+" · ":""}${brl(g/n)} por pessoa`];
+}
+const priceLine=t=>priceParts(t).filter(Boolean).join(" · ");
+const tipoTag=t=>{const[,l,ic]=tipoOf(t);return `<span class="tag">${I[ic]}${l}</span>`};
 const lvlHtml=(n,mini)=>{n=Math.max(0,Math.min(3,+n||0));return `<span class="lvl l${n}${mini?" mini":""}" title="${esc(LEVELS[n][1])}"><span class="dots">${[1,2,3].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</span>${LEVELS[n][0]}</span>`};
 const statusTag=s=>{const st=STATUS.find(x=>x[0]===s);return st?`<span class="tag ${st[2]}">${st[1]}</span>`:""};
 const svcHtml=p=>{if(!p||p.tipo==="hotel")return"";const f=[["agua","Água",I.drop],["despejo","Despejo",I.dump],["chuveiro","Chuveiro",I.shower]].filter(([k])=>p[k]);
@@ -515,10 +543,13 @@ function costValue(c){
   return toBRL(c.valor,c.moeda||"BRL");
 }
 function totals(){
-  const items=D().custos.map(c=>({...c,brl:costValue(c)||0}));
+  const items=D().custos.filter(c=>!c.substituidoPor).map(c=>({...c,brl:costValue(c)||0}));
+  const acts=D().trilhas.filter(t=>hasPrice(t));
+  for(const t of acts.filter(t=>!isIdea(t)))items.push({id:t.id,ativ:true,cat:TIPO_CUSTO[t.tipo]||"passeios",nome:t.nome,nota:priceLine(t),pago:!!t.pago,brl:ativBRL(t)||0,dia:t.dia});
+  const ideas=acts.filter(isIdea); const ideasBRL=ideas.reduce((a,t)=>a+(ativBRL(t)||0),0);
   const sum=f=>items.filter(f).reduce((a,c)=>a+c.brl,0);
   const total=sum(()=>true), paid=sum(c=>c.pago), meta=+(C().metaPorPessoa)||0, n=nPeople();
-  return {items,total,paid,open:total-paid,pp:total/n,ppPaid:paid/n,meta,diff:total/n-meta};
+  return {items,total,paid,open:total-paid,pp:total/n,ppPaid:paid/n,meta,diff:total/n-meta,ideas,ideasBRL};
 }
 
 /* ---------- toasts ---------- */
@@ -622,7 +653,7 @@ function renderNet(){
   else if(q){b.hidden=false;b.className="net";b.innerHTML=`${I.cloud}Enviando`}
   else b.hidden=true;
 }
-function route(){const h=location.hash.slice(1).split("-")[0];S.view=VIEWS.some(v=>v[0]===h)?h:"hoje";render();window.scrollTo(0,0)}
+function route(){let h=location.hash.slice(1).split("-")[0];if(h==="trilhas")h="atividades";S.view=VIEWS.some(v=>v[0]===h)?h:"hoje";render();window.scrollTo(0,0)}
 window.addEventListener("hashchange",route);
 
 /* ---------- HOJE ---------- */
@@ -702,7 +733,7 @@ function dayCard(x,compact,i,len){
     ${sleep}
     <div class="day-b">
       ${x.fazer?`<p>${esc(x.fazer)}</p>`:""}
-      ${progs.length?`<div class="progs">${progs.map(t=>`<button class="prog" type="button" data-trail="${esc(t.id)}">${lvlHtml(t.nivel,true)}<span class="t"><b>${esc(t.nome)}</b>${t.tempo?`<small>${esc(t.tempo)}${t.quem&&t.quem!=="todos"?" · "+esc(quemLabel(t.quem)):""}</small>`:""}</span></button>`).join("")}</div>`:""}
+      ${progs.length?`<div class="progs">${progs.slice().sort((a,b)=>(isIdea(a)?1:0)-(isIdea(b)?1:0)).map(progRow).join("")}</div>`:""}
       ${(x.avisos||[]).length?`<ul class="alerts">${x.avisos.map(a=>`<li>${I.alert}<span>${esc(a)}</span></li>`).join("")}</ul>`:""}
     </div>
     ${compact?"":`<div class="day-f">
@@ -711,6 +742,11 @@ function dayCard(x,compact,i,len){
       <button class="btn sm ghost right" type="button" data-editday="${esc(x.id)}">${I.edit}Editar</button>
     </div>`}
   </section>`;
+}
+function progRow(t){
+  const sub=[t.tempo,t.quem&&t.quem!=="todos"&&t.tipo==="trilha"?quemLabel(t.quem):"",hasPrice(t)?priceParts(t)[0]:""].filter(Boolean).join(" · ");
+  const badge=t.tipo==="trilha"?lvlHtml(t.nivel,true):`<span class="tag">${I[tipoOf(t)[2]]}</span>`;
+  return `<button class="prog${isIdea(t)?" idea":""}" type="button" data-trail="${esc(t.id)}">${badge}<span class="t">${isIdea(t)?`<small class="idea-k">Sugestão${t.by?" de "+esc(t.by):""}</small>`:""}<b>${esc(t.nome)}</b>${sub?`<small>${esc(sub)}</small>`:""}</span></button>`;
 }
 const quemLabel=q=>q==="todos"?"Para todos":q==="avaliar"?"Avaliar se todos fazem":q;
 
@@ -817,32 +853,49 @@ function roteiroReservas(){
     </div>`}).join("")}</div>`;
 }
 
-/* ---------- TRILHAS ---------- */
-function viewTrilhas(){
+/* ---------- ATIVIDADES ---------- */
+function viewAtividades(){
   const f=S.trailFilter; const ds=days(); const pos=t=>{const d=ds.find(x=>x.id===t.dia);return d?d.pos:999};
-  let list=D().trilhas.slice().sort((a,b)=>pos(a)-pos(b)||(+a.nivel||0)-(+b.nivel||0));
-  if(f==="todos")list=list.filter(t=>t.quem==="todos"&&(+t.nivel||0)<=1);
-  else if(f!=="todas")list=list.filter(t=>String(+t.nivel||0)===f);
-  const chips=[["todas","Todas"],["todos","Serve para todos"],["1","Fácil"],["2","Moderada"],["3","Difícil"],["0","Sem esforço"]];
-  return `<div class="page-head"><div class="eyebrow">Trilhas e passeios</div><h1>O que vamos fazer</h1>
-    <p class="lead">O nível de cada um aparece em destaque. <b>Fácil</b> serve para todos; <b>Moderada</b> pede fôlego; <b>Difícil</b> é longa ou com altitude, e sempre tem uma opção mais leve ao lado.</p></div>
-  <div class="row" style="margin-bottom:14px"><button class="btn primary" type="button" data-act="newtrail">${I.plus}Sugerir programa</button></div>
-  <div class="chips" role="group" aria-label="Filtrar por nível">${chips.map(([k,l])=>`<button class="chip" type="button" data-tf="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
-  ${list.length?`<div class="grid two">${list.map(trailCard).join("")}</div>`:`<div class="empty"><b>Nada com esse filtro</b>Troque o filtro ou sugira um programa.</div>`}`;
+  let list=D().trilhas.slice().sort((a,b)=>pos(a)-pos(b)||(isIdea(a)?1:0)-(isIdea(b)?1:0)||(+a.nivel||0)-(+b.nivel||0));
+  const ideas=list.filter(isIdea).length;
+  if(f==="roteiro")list=list.filter(t=>!isIdea(t));
+  else if(f==="ideias")list=list.filter(isIdea);
+  else if(f==="todos")list=list.filter(t=>t.quem==="todos"&&(t.tipo!=="trilha"||(+t.nivel||0)<=1));
+  else if(f!=="todas")list=list.filter(t=>(t.tipo||"outro")===f);
+  const chips=[["todas","Todas"],["roteiro","No roteiro"],["ideias",`Ideias${ideas?" ("+ideas+")":""}`],["todos","Serve para todos"],...ATIV_TIPOS.map(x=>[x[0],x[1]])];
+  return `<div class="page-head"><div class="eyebrow">Atividades</div><h1>O que vamos fazer</h1>
+    <p class="lead">Trilhas, passeios, comida e vinho, transporte e o que mais surgir. Uma <b>ideia</b> pode ter um dia sugerido, mas só entra no roteiro e nos custos quando alguém tocar em <b>Colocar no roteiro</b>. Nas trilhas, o nível aparece em destaque.</p></div>
+  <div class="row" style="margin-bottom:14px"><button class="btn primary" type="button" data-act="newtrail">${I.plus}Sugerir atividade</button></div>
+  <div class="chips" role="group" aria-label="Filtrar atividades">${chips.map(([k,l])=>`<button class="chip" type="button" data-tf="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
+  ${list.length?`<div class="grid two">${list.map(trailCard).join("")}</div>`:`<div class="empty"><b>Nada com esse filtro</b>Troque o filtro ou sugira uma atividade.</div>`}`;
 }
 function trailCard(t){
-  const d=dayById(t.dia);
-  return `<article class="card trail" id="trilha-${esc(t.id)}"><div class="trail-b">
-    <div class="row">${lvlHtml(t.nivel)}${t.tipo==="passeio"?`<span class="tag">Passeio</span>`:""}</div>
+  const d=dayById(t.dia); const idea=isIdea(t); const trilha=t.tipo==="trilha";
+  const facts=trilha?[["km","Distância"],["desnivel","Desnível"],["tempo","Tempo"]]:[["tempo","Tempo"]];
+  return `<article class="card trail${idea?" idea":""}" id="trilha-${esc(t.id)}"><div class="trail-b">
+    <div class="row">${trilha?lvlHtml(t.nivel):""}${tipoTag(t)}${idea?`<span class="tag sky">Ideia</span>`:`<span class="tag ok">${I.check}No roteiro</span>`}</div>
     <h3>${esc(t.nome)}</h3>
-    <div class="meta"><span>${I.pin}${esc(t.onde||"")}</span>${d?`<span>${I.roteiro}${wd(d.date)} ${dm(d.date)}</span>`:`<span class="tag">Sem dia ainda</span>`}</div>
-    ${(()=>{const f=[["km","Distância"],["desnivel","Desnível"],["tempo","Tempo"]].filter(([k])=>t[k]);return f.length?`<div class="facts" style="grid-template-columns:repeat(${f.length},minmax(0,1fr))">${f.map(([k,l])=>`<div><b>${esc(t[k])}</b><span>${l}</span></div>`).join("")}</div>`:""})()}
-    <div class="row">${t.quem?`<span class="tag ${t.quem==="todos"?"ok":"wait"}">${I.users}${esc(quemLabel(t.quem))}</span>`:""}</div>
-    ${t.leve?`<div class="lighter"><b>Opção mais leve:</b> ${esc(t.leve)}</div>`:""}
+    <div class="meta">${t.onde?`<span>${I.pin}${esc(t.onde)}</span>`:""}${d?`<span>${I.roteiro}${idea?"Sugerido para ":""}${wd(d.date)} ${dm(d.date)}</span>`:`<span class="tag">Sem dia ainda</span>`}</div>
+    ${hasPrice(t)?`<div class="price"><b>${esc(priceParts(t)[0])}</b>${priceParts(t)[1]?`<div class="muted small">${esc(priceParts(t)[1])}</div>`:""}${t.pago?` <span class="paid y">${I.check}Pago</span>`:""}${t.precoNota?`<div class="by">${esc(t.precoNota)}</div>`:""}</div>`:""}
+    ${(()=>{const f=facts.filter(([k])=>t[k]);return f.length?`<div class="facts" style="grid-template-columns:repeat(${f.length},minmax(0,1fr))">${f.map(([k,l])=>`<div><b>${esc(t[k])}</b><span>${l}</span></div>`).join("")}</div>`:""})()}
+    ${t.quem?`<div class="row"><span class="tag ${t.quem==="todos"?"ok":"wait"}">${I.users}${esc(quemLabel(t.quem))}</span></div>`:""}
+    ${trilha&&t.leve?`<div class="lighter"><b>Opção mais leve:</b> ${esc(t.leve)}</div>`:""}
     ${t.obs?`<p class="muted">${esc(t.obs)}</p>`:""}
     ${t.link?`<a class="small" href="${esc(t.link)}" target="_blank" rel="noopener">Ver mais</a>`:""}
     ${t.by?`<div class="by">Sugerido por ${esc(t.by)}</div>`:""}
-  </div><div class="trail-f">${d?`<a class="btn sm ghost" href="#roteiro" data-goday="${esc(d.id)}">Ver o dia</a>`:""}<button class="btn sm ghost right" type="button" data-edittrail="${esc(t.id)}">${I.edit}Editar</button></div></article>`;
+  </div><div class="trail-f">${idea?`<button class="btn sm primary" type="button" data-promote="${esc(t.id)}">${I.plus}Colocar no roteiro</button>`:d?`<a class="btn sm ghost" href="#roteiro" data-goday="${esc(d.id)}">Ver o dia</a>`:""}<button class="btn sm ghost right" type="button" data-edittrail="${esc(t.id)}">${I.edit}Editar</button></div></article>`;
+}
+// an idea goes into the plan on its suggested day; without one, pick the day first
+function promote(id){
+  const t=D().trilhas.find(x=>x.id===id);if(!t||needMe())return;
+  const go=dia=>{const d=dayById(dia);upd("trilhas",id,{status:"roteiro",dia},`colocou "${t.nome}" no roteiro${d?" ("+dm(d.date)+")":""}`);
+    toast("No roteiro"+(hasPrice(t)?" e nos custos":""),()=>upd("trilhas",id,{status:"ideia",dia:t.dia||""},`voltou "${t.nome}" para ideia`))};
+  if(dayById(t.dia)){go(t.dia);return}
+  dayPick("Em que dia?",null,dia=>go(dia));
+}
+function dayPick(title,cur,cb){
+  openSheet(title,`<div class="pick">${days().map(x=>`<button type="button" data-pd="${esc(x.id)}" aria-pressed="${cur===x.id}"><b>${wd(x.date)} ${dm(x.date)}</b><span class="t">${esc(x.titulo)}<small>${esc(stayOf(x.pernoite)?.nome||"")}</small></span></button>`).join("")}</div>`,
+  el=>el.addEventListener("click",e=>{const b=e.target.closest("[data-pd]");if(!b)return;closeSheet();cb(b.dataset.pd)}));
 }
 
 /* ---------- LISTAS ---------- */
@@ -891,14 +944,16 @@ function viewCustos(){
   return `<div class="page-head"><div class="eyebrow">Custos · ${n} pessoas</div><h1>${brl(t.pp)} por pessoa</h1>
     <p class="lead">Total do grupo <b>${brl(t.total)}</b>. ${t.meta?`${over?`<b style="color:var(--l3)">${brl(t.diff)} acima</b>`:`<b style="color:var(--l1)">${brl(-t.diff)} abaixo</b>`} da meta de ${brl(t.meta)} por pessoa.`:""} Sem divisão de quem pagou: é tudo da família.</p></div>
   <div class="stat"><div><b>${brl(t.ppPaid)}</b><span>já pago por pessoa (${brl(t.paid)} no grupo)</span></div><div><b>${brl(t.pp-t.ppPaid)}</b><span>a pagar por pessoa (${brl(t.open)} no grupo)</span></div></div>
+  ${t.ideas.length?`<a class="banner info" href="#atividades" data-tf="ideias" style="text-decoration:none">${I.info}<div><b>Ideias ainda não confirmadas: +${brl(t.ideasBRL/n)} por pessoa</b> (${t.ideas.length} ${t.ideas.length===1?"ideia":"ideias"}, ${brl(t.ideasBRL)} no grupo). Não entram no total até irem para o roteiro.</div></a>`:""}
   <div class="bar">${byCat.map(g=>{const v=g.items.reduce((a,i)=>a+i.brl,0);return `<i style="width:${t.total?v/t.total*100:0}%;background:${g.c}" title="${esc(g.l)}"></i>`}).join("")}</div>
   <div class="legend2">${byCat.map(g=>`<span><i style="background:${g.c}"></i>${esc(g.l)}</span>`).join("")}</div>
   <div class="section"><div class="section-head"><h2>Por categoria</h2><button class="btn sm right" type="button" data-act="newcost">${I.plus}Custo</button></div>
+  <p class="by" style="margin:-4px 0 10px">Passeios, transporte e comida fora do camper vêm da aba Atividades: para mudar o preço, edite a atividade.</p>
   <div class="card" style="overflow:hidden"><table class="btable">
     ${byCat.map(g=>{const v=g.items.reduce((a,i)=>a+i.brl,0);return `<tr class="cat-row"><td>${esc(g.l)}</td><td class="v">${brl(v)}<span class="alt">${brl(v/n)} por pessoa</span></td></tr>
-      ${g.items.map(i=>`<tr class="item-row" data-editcost="${esc(i.id)}"><td class="k"><b>${esc(i.nome)}</b>${i.nota?`<small>${esc(i.nota)}</small>`:""}${i.auto==="hotel"&&chosenHotel()?`<small>${esc(chosenHotel().nome)}</small>`:""}
+      ${g.items.map(i=>`<tr class="item-row" ${i.ativ?`data-trail="${esc(i.id)}"`:`data-editcost="${esc(i.id)}"`}><td class="k"><b>${esc(i.nome)}</b>${i.ativ?`<small>Atividade${dayById(i.dia)?" · "+wd(dayById(i.dia).date)+" "+dm(dayById(i.dia).date):""}</small>`:""}${i.nota?`<small>${esc(i.nota)}</small>`:""}${i.auto==="hotel"&&chosenHotel()?`<small>${esc(chosenHotel().nome)}</small>`:""}
         <div><span class="paid ${i.pago?"y":"n"}">${i.pago?I.check+"Pago":"A pagar"}</span></div></td>
-        <td class="v"><b>${brl(i.brl)}</b>${i.moeda&&i.moeda!=="BRL"&&!i.auto?`<span class="alt">${inCur(i.valor,i.moeda)}</span>`:""}<span class="alt">${brl(i.brl/n)} por pessoa</span></td></tr>`).join("")}`}).join("")}
+        <td class="v"><b>${brl(i.brl)}</b>${i.moeda&&i.moeda!=="BRL"&&!i.auto&&!i.ativ?`<span class="alt">${inCur(i.valor,i.moeda)}</span>`:""}<span class="alt">${brl(i.brl/n)} por pessoa</span></td></tr>`).join("")}`}).join("")}
   </table></div></div>
   <div class="section"><div class="card pad"><div class="row"><h3>Câmbio</h3><button class="btn sm ghost right" type="button" data-act="rates">${I.edit}Mudar</button></div>
     <p class="muted" style="margin:6px 0 0">US$ 1 = <b>R$ ${fmt(r.usd,2)}</b> · R$ 1 = <b>ARS ${fmt(r.ars)}</b></p>${C().cambio?.nota?`<p class="by" style="margin:6px 0 0">${esc(C().cambio.nota)}</p>`:""}</div></div>`;
@@ -950,13 +1005,13 @@ function render(){
     if(!/^[A-Za-z0-9_-]{6,80}$/.test(k)){toast("Esse não parece o link de convite.");return}ls.set("w_k",k);S.key=k;S.authFail=false;refresh()});return}
   if(!S.data){m.innerHTML=`<div class="empty" style="margin-top:30px"><b>Carregando…</b>${S.online===false?"Sem sinal e nada salvo neste celular ainda. Abra o app uma vez com internet.":""}</div>`;return}
   nav();
-  m.innerHTML={hoje:viewHoje,roteiro:viewRoteiro,trilhas:viewTrilhas,listas:viewListas,custos:viewCustos,hotel:viewHotel}[S.view]();
+  m.innerHTML={hoje:viewHoje,roteiro:viewRoteiro,atividades:viewAtividades,listas:viewListas,custos:viewCustos,hotel:viewHotel}[S.view]();
   if(sheetRefresh)sheetRefresh();
 }
 
 /* ---------- clicks ---------- */
 document.getElementById("main").addEventListener("click",e=>{
-  const t=e.target.closest("button,[data-sub],[data-goday],tr[data-editcost]");if(!t)return;
+  const t=e.target.closest("button,[data-sub],[data-goday],tr[data-editcost],tr[data-trail],a[data-tf]");if(!t)return;
   const ds=t.dataset;
   if(ds.sub){e.preventDefault();const[a,b]=ds.sub.split("|");S.sub[a]=b;if(S.view!==a){location.hash=a}else render();return}
   if(ds.goday){e.preventDefault();S.sub.roteiro="dias";location.hash="roteiro";setTimeout(()=>document.getElementById("dia-"+ds.goday)?.scrollIntoView({block:"start"}),60);return}
@@ -969,6 +1024,7 @@ document.getElementById("main").addEventListener("click",e=>{
   else if(ds.trail)trailView(ds.trail);
   else if(ds.edittrail)trailSheet(ds.edittrail);
   else if(ds.tf){S.trailFilter=ds.tf;render()}
+  else if(ds.promote)promote(ds.promote);
   else if(ds.tick){const c=D().checklist.find(x=>x.id===ds.tick);if(c)upd("checklist",c.id,c.feito?{feito:false,feitoPor:null}:{feito:true,feitoPor:S.me})}
   else if(ds.delcheck){const c=D().checklist.find(x=>x.id===ds.delcheck);if(c&&del("checklist",c.id,`tirou "${c.texto}" da lista`))toast("Item apagado",()=>setItem("checklist",c.id,c,`devolveu "${c.texto}" para a lista`))}
   else if(ds.done){const p=D().pendencias.find(x=>x.id===ds.done);if(p)upd("pendencias",p.id,p.feito?{feito:false,feitoPor:null,feitoEm:null}:{feito:true,feitoPor:S.me,feitoEm:Date.now()},p.feito?`reabriu a pendência "${p.titulo}"`:`resolveu "${p.titulo}"`)}
@@ -1038,7 +1094,7 @@ document.getElementById("importFile").addEventListener("change",async e=>{
   let d;try{d=JSON.parse(await f.text())}catch(x){toast("Esse arquivo não é um JSON válido.");return}
   if(!d||!d.config||!Array.isArray(d.dias)){toast("O arquivo precisa ter config e dias, como o data/viagem.json.");return}
   if(needMe())return;
-  openSheet("Trocar todos os dados?",`<p style="margin-top:0">O arquivo tem <b>${d.dias.length} dias</b>, ${(d.trilhas||[]).length} trilhas, ${(d.checklist||[]).length} itens no checklist, ${(d.pendencias||[]).length} pendências e ${(d.custos||[]).length} custos.</p>
+  openSheet("Trocar todos os dados?",`<p style="margin-top:0">O arquivo tem <b>${d.dias.length} dias</b>, ${(d.trilhas||[]).length} atividades, ${(d.checklist||[]).length} itens no checklist, ${(d.pendencias||[]).length} pendências e ${(d.custos||[]).length} custos.</p>
     <p class="muted">Tudo o que está no app agora é trocado por ele, para todo mundo. Uma cópia de segurança do que está aqui fica guardada no servidor.</p>
     <div class="row"><button class="btn primary" type="button" id="go">Trocar os dados</button><button class="btn ghost" type="button" id="no">Cancelar</button></div>`,
   el=>{el.querySelector("#no").onclick=closeSheet;el.querySelector("#go").onclick=async()=>{
@@ -1099,31 +1155,52 @@ function daySheet(id){
 }
 function trailView(id){
   const t=D().trilhas.find(x=>x.id===id);if(!t)return;
-  openSheet(t.nome,trailCard(t).replace(/^<article class="card trail"/,'<article class="trail"'),el=>el.addEventListener("click",e=>{const b=e.target.closest("[data-edittrail],[data-goday]");if(!b)return;
-    if(b.dataset.edittrail)trailSheet(b.dataset.edittrail);else{e.preventDefault();closeSheet();const g=b.dataset.goday;S.sub.roteiro="dias";location.hash="roteiro";setTimeout(()=>document.getElementById("dia-"+g)?.scrollIntoView({block:"start"}),60)}}));
+  openSheet(t.nome,trailCard(t).replace(/^<article class="card trail[^"]*"/,'<article class="trail"'),el=>el.addEventListener("click",e=>{const b=e.target.closest("[data-edittrail],[data-goday],[data-promote]");if(!b)return;
+    if(b.dataset.edittrail)trailSheet(b.dataset.edittrail);else if(b.dataset.promote){closeSheet();promote(b.dataset.promote)}else{e.preventDefault();closeSheet();const g=b.dataset.goday;S.sub.roteiro="dias";location.hash="roteiro";setTimeout(()=>document.getElementById("dia-"+g)?.scrollIntoView({block:"start"}),60)}}));
 }
 function trailSheet(id,dayId){
-  const t=id?D().trilhas.find(x=>x.id===id):{tipo:"trilha",nivel:1,quem:"todos",dia:dayId||""};
+  const t=id?D().trilhas.find(x=>x.id===id):{tipo:"passeio",nivel:0,quem:"todos",dia:dayId||"",status:"ideia",moeda:"BRL",base:"grupo"};
   let lv=+t.nivel||0;
-  openSheet(id?"Editar programa":"Sugerir programa",`<form id="tf">
-    <div class="field"><span class="lbl">Nível</span><div class="lvlpick" id="lvp">${[0,1,2,3].map(n=>`<button type="button" class="lvl l${n}" data-lv="${n}" aria-pressed="${lv===n}">${lvlHtml(n).replace(/^<span class="lvl l\d"[^>]*>/,"").replace(/<\/span>$/,"")}</button>`).join("")}</div></div>
-    <div class="field"><label for="t-n">Nome</label><input id="t-n" required maxlength="80" value="${esc(t.nome||"")}" placeholder="Ex.: Mirante do Cañón"></div>
-    <div class="frow"><div class="field"><label for="t-tp">Tipo</label><select id="t-tp">${opt([["trilha","Trilha"],["passeio","Passeio"]],t.tipo)}</select></div>
-      <div class="field"><label for="t-d">Dia</label><select id="t-d"><option value="">Ainda sem dia</option>${opt(days().map(x=>[x.id,`${wd(x.date)} ${dm(x.date)} · ${x.titulo}`]),t.dia)}</select></div></div>
+  const n=nPeople();
+  openSheet(id?"Editar atividade":"Sugerir atividade",`<form id="tf">
+    <div class="field"><label for="t-tp">Tipo</label><select id="t-tp">${opt(ATIV_TIPOS.map(x=>[x[0],x[1]]),t.tipo||"outro")}</select></div>
+    <div class="field" data-only="trilha"><span class="lbl">Nível da trilha</span><div class="lvlpick" id="lvp">${[0,1,2,3].map(k=>`<button type="button" class="lvl l${k}" data-lv="${k}" aria-pressed="${lv===k}">${lvlHtml(k).replace(/^<span class="lvl l\d"[^>]*>/,"").replace(/<\/span>$/,"")}</button>`).join("")}</div></div>
+    <div class="field"><label for="t-n">Nome</label><input id="t-n" required maxlength="80" value="${esc(t.nome||"")}" placeholder="Ex.: Transfer do aeroporto, vinícola que os tios indicaram"></div>
     <div class="field"><label for="t-o">Onde</label><input id="t-o" maxlength="80" value="${esc(t.onde||"")}"></div>
-    <div class="frow three"><div class="field"><label for="t-km">Distância</label><input id="t-km" maxlength="20" value="${esc(t.km||"")}" placeholder="5 km"></div><div class="field"><label for="t-ds">Desnível</label><input id="t-ds" maxlength="20" value="${esc(t.desnivel||"")}" placeholder="300 m"></div><div class="field"><label for="t-tm">Tempo</label><input id="t-tm" maxlength="30" value="${esc(t.tempo||"")}" placeholder="2h"></div></div>
+    <div class="field"><label for="t-d">Dia (ou sugestão de dia)</label><select id="t-d"><option value="">Ainda sem dia</option>${opt(days().map(x=>[x.id,`${wd(x.date)} ${dm(x.date)} · ${x.titulo}`]),t.dia)}</select></div>
+    <div class="field"><span class="lbl">Situação</span><div class="seg" id="t-st" style="margin:0">${[["ideia","Só uma ideia"],["roteiro","No roteiro"]].map(([k,l])=>`<button type="button" data-st="${k}" aria-pressed="${(t.status||"roteiro")===k}">${l}</button>`).join("")}</div>
+      <small class="by">Ideias não entram no total dos custos.</small></div>
+    <div class="frow"><div class="field"><label for="t-pv">Preço</label><input id="t-pv" inputmode="decimal" value="${hasPrice(t)?t.preco:""}" placeholder="Vazio se não sabe"></div>
+      <div class="field"><label for="t-pm">Moeda</label><select id="t-pm">${opt([["BRL","Reais (R$)"],["USD","Dólar (US$)"],["ARS","Pesos (ARS)"]],t.moeda||"BRL")}</select></div></div>
+    <div class="frow"><div class="field"><label for="t-pb">O preço é</label><select id="t-pb">${opt([["grupo","Total do grupo"],["pessoa","Por pessoa"]],t.base||"grupo")}</select></div>
+      <div class="field" id="t-qw"><label for="t-qt">Quantas pessoas</label><select id="t-qt">${opt(Array.from({length:n},(_,i)=>[String(i+1),String(i+1)]).reverse(),String(t.qtd||n))}</select></div></div>
+    <div class="field"><label for="t-pn">De onde veio o preço</label><input id="t-pn" maxlength="120" value="${esc(t.precoNota||"")}" placeholder="Site, cotação por WhatsApp, estimativa…"></div>
+    <label class="check"><input type="checkbox" id="t-pg" ${t.pago?"checked":""}> Já está pago</label>
+    <div class="frow three" data-only="trilha"><div class="field"><label for="t-km">Distância</label><input id="t-km" maxlength="20" value="${esc(t.km||"")}" placeholder="5 km"></div><div class="field"><label for="t-ds">Desnível</label><input id="t-ds" maxlength="20" value="${esc(t.desnivel||"")}" placeholder="300 m"></div><div class="field"><label for="t-tm">Tempo</label><input id="t-tm" maxlength="30" value="${esc(t.tempo||"")}" placeholder="2h"></div></div>
+    <div class="field" data-not="trilha"><label for="t-tm2">Quanto tempo leva</label><input id="t-tm2" maxlength="30" value="${esc(t.tempo||"")}" placeholder="Meio dia, 40 min…"></div>
     <div class="field"><label for="t-q">Quem vai</label><select id="t-q">${opt([["todos","Para todos"],["avaliar","Avaliar se todos fazem"],["Beny e Alan","Só Beny e Alan"],["quem quiser","Quem quiser"]],t.quem)}</select></div>
-    <div class="field"><label for="t-l">Opção mais leve</label><input id="t-l" maxlength="160" value="${esc(t.leve||"")}" placeholder="O que fazer se a trilha for puxada"></div>
+    <div class="field" data-only="trilha"><label for="t-l">Opção mais leve</label><input id="t-l" maxlength="160" value="${esc(t.leve||"")}" placeholder="O que fazer se a trilha for puxada"></div>
     <div class="field"><label for="t-ob">Observações</label><textarea id="t-ob">${esc(t.obs||"")}</textarea></div>
     <div class="field"><label for="t-lk">Link</label><input id="t-lk" value="${esc(t.link||"")}" placeholder="https://…"></div>
     <div class="row"><button class="btn primary" type="submit">${id?"Salvar":"Sugerir"}</button>${id?`<button class="btn ghost right" type="button" id="tdel" style="color:var(--l3)">${I.trash}Apagar</button>`:""}</div></form>`,
   el=>{
+    let st=t.status||"roteiro";
+    const sync=()=>{const tp=val(el,"t-tp");el.querySelectorAll("[data-only]").forEach(x=>x.hidden=x.dataset.only!==tp);el.querySelectorAll("[data-not]").forEach(x=>x.hidden=x.dataset.not===tp);
+      el.querySelector("#t-qw").hidden=val(el,"t-pb")!=="pessoa"};
+    sync(); el.querySelector("#t-tp").addEventListener("change",sync); el.querySelector("#t-pb").addEventListener("change",sync);
+    el.querySelector("#t-st").addEventListener("click",e=>{const b=e.target.closest("[data-st]");if(!b)return;st=b.dataset.st;el.querySelectorAll("[data-st]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.st===st)))});
     el.querySelector("#lvp").addEventListener("click",e=>{const b=e.target.closest("[data-lv]");if(!b)return;lv=+b.dataset.lv;el.querySelectorAll("[data-lv]").forEach(x=>x.setAttribute("aria-pressed",String(+x.dataset.lv===lv)))});
     el.querySelector("#tf").addEventListener("submit",e=>{e.preventDefault();
-      const next={...t,nivel:lv,nome:val(el,"t-n"),tipo:val(el,"t-tp"),dia:val(el,"t-d"),onde:val(el,"t-o"),km:val(el,"t-km"),desnivel:val(el,"t-ds"),tempo:val(el,"t-tm"),quem:val(el,"t-q"),leve:val(el,"t-l"),obs:val(el,"t-ob"),link:val(el,"t-lk")};
+      const tp=val(el,"t-tp"); const trilha=tp==="trilha";
+      const next={...t,tipo:tp,nivel:trilha?lv:0,nome:val(el,"t-n"),dia:val(el,"t-d"),status:st,onde:val(el,"t-o"),tempo:trilha?val(el,"t-tm"):val(el,"t-tm2"),
+        km:trilha?val(el,"t-km"):"",desnivel:trilha?val(el,"t-ds"):"",leve:trilha?val(el,"t-l"):"",quem:val(el,"t-q"),obs:val(el,"t-ob"),link:val(el,"t-lk"),
+        preco:num(el,"t-pv"),moeda:val(el,"t-pm"),base:val(el,"t-pb"),qtd:val(el,"t-pb")==="pessoa"?+val(el,"t-qt"):null,precoNota:val(el,"t-pn"),pago:el.querySelector("#t-pg").checked};
       if(!id){next.by=S.me;next.criado=Date.now()} delete next.id; closeSheet();
-      if(setItem("trilhas",id||"t"+rid(),next,id?`editou "${next.nome}"`:`sugeriu o programa "${next.nome}"`))toast(id?"Salvo":"Programa sugerido")});
-    const dl=el.querySelector("#tdel");if(dl)dl.onclick=()=>{closeSheet();if(del("trilhas",id,`apagou o programa "${t.nome}"`))toast("Programa apagado",()=>{const{id:_,...r}=t;setItem("trilhas",id,r,`devolveu o programa "${t.nome}"`)})};
+      const d=dayById(next.dia);
+      const log=id?(t.status==="ideia"&&st==="roteiro"?`colocou "${next.nome}" no roteiro${d?" ("+dm(d.date)+")":""}`:`editou "${next.nome}"`)
+        :st==="ideia"?`sugeriu "${next.nome}"${d?" para "+dm(d.date):""}${hasPrice(next)?", "+priceParts(next)[0]:""}`:`colocou "${next.nome}" no roteiro${d?" ("+dm(d.date)+")":""}`;
+      if(setItem("trilhas",id||"t"+rid(),next,log))toast(id?"Salvo":st==="ideia"?"Ideia sugerida":"No roteiro")});
+    const dl=el.querySelector("#tdel");if(dl)dl.onclick=()=>{closeSheet();if(del("trilhas",id,`apagou "${t.nome}"`))toast("Atividade apagada",()=>{const{id:_,...r}=t;setItem("trilhas",id,r,`devolveu "${t.nome}"`)})};
   });
 }
 function todoSheet(id){
