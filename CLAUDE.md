@@ -5,7 +5,7 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
 ## Arquitetura
 
 - Netlify, deploy pelo repo GitHub jacare180/wilders-mendoza (público: no plano grátis, repo privado só aceita um contribuidor)
-- `public/index.html`: app inteiro em um arquivo (HTML/CSS/JS puro). Rotas por hash: `#hoje`, `#roteiro` (Dias, Mapa, Água, Reservas), `#trilhas`, `#listas` (Checklist, Pendências), `#custos`, `#hotel`
+- `public/index.html`: app inteiro em um arquivo (HTML/CSS/JS puro). Rotas por hash: `#hoje`, `#roteiro` (Dias, Mapa, Água, Reservas), `#atividades` (o antigo `#trilhas` ainda abre), `#listas` (Checklist, Pendências), `#custos`, `#hotel`
 - `public/sw.js`: service worker. Página com rede primeiro e cópia em cache sem sinal; fontes e fotos com cache primeiro
 - `netlify/functions/api.mjs`: API com Netlify Blobs (store "wilders", consistência strong)
   - `GET /api/state` | `POST /api/write {op: set|update|delete, coll, id, data, who, log}` | `POST /api/import {dados, who}` | `POST /api/photo` | `GET /api/photo/:id`
@@ -16,6 +16,11 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
 - Offline: o último estado fica no localStorage (`w_data`); mudanças feitas sem sinal entram numa fila (`w_queue`), aparecem na hora e são enviadas quando o sinal volta
 - Um código só, na variável `KEY_WILDERS` do Netlify (contexto "all", variável comum, não secreta). Link: `/?k=CODIGO`; o código fica no localStorage e sai da barra de endereço. Sem código, a API não responde nada
 - Sem perfis: cada pessoa toca no próprio nome uma vez (Beny, Alan, Ilana, vindo de `config.pessoas`). O nome assina o log ("Novidades" na aba Hoje), os itens adicionados e quem marcou cada coisa
+- Aba Atividades: os itens ficam na coleção `trilhas` (nome mantido para não migrar). Tipos `trilha`, `passeio`, `comida`, `transporte`, `outro`; nível e campos de trilha só aparecem em `trilha`
+  - Preço próprio: `preco`, `moeda` (BRL, USD, ARS), `base` (`grupo` ou `pessoa`, com `qtd` de pessoas), `precoNota`, `pago`
+  - `status`: `ideia` (pode ter dia sugerido, aparece tracejada no dia, fica fora do total) ou `roteiro` (sem status conta como roteiro). "Colocar no roteiro" muda para `roteiro`
+  - Custos somam as atividades no roteiro por categoria (trilha, passeio e outro em Passeios; `transporte`; `comida` em Comida e vinho) e mostram as ideias numa linha à parte
+  - Passo único `meta/atividades-v1` no `api.mjs`: passou os preços das linhas de custo de passeios para as atividades e marcou essas linhas com `substituidoPor` (não apagou). O app ignora linhas com `substituidoPor`
 - Ordem dos dias em `config.ordem`; a data de cada dia vem da posição a partir de `config.inicio`. Só dias da fase camper mudam de lugar. Trilhas apontam para o dia pelo id (`dia`), então vão junto
 - Custos: `auto: "pernoites"` soma o preço dos pernoites dos dias de camper; `auto: "hotel"` usa o hotel escolhido na aba Hotel, ou a estimativa enquanto nenhum for escolhido. Câmbio editável em `config.cambio`
 - `?hoje=AAAA-MM-DD` mostra o app como se fosse aquele dia (para testar)
@@ -35,6 +40,7 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
 - Llancanelo: circuito parcial autoguiado; completo exige guia
 - Aconcágua: só cartão e reserva antecipada
 - Valle Grande municipal é só de dia; Vallecitos não permite pernoite de camper; Camping Municipal de Uspallata em reforma; Pincheira abre 24/12 e só aceita dinheiro; Laguna del Diamante fora (abre em janeiro)
+- O roteiro original era sem vinícolas; vinícola só entra se alguém da família sugerir (ex.: a indicada pelos tios)
 
 ## Deploy
 
