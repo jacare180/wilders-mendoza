@@ -61,6 +61,7 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
 
 - Cada push na `main` dispara o build. Deploy em produção custa 15 créditos e a conta do Netlify é a mesma do sadosboets (300 por ciclo, divididos entre os dois sites): juntar mudanças e publicar uma vez por rodada
 - `netlify.toml` tem `ignore`: commit que só mexe fora de `public/`, `netlify/`, `data/`, `netlify.toml` e `package.json` não gera build
+- Antes de pedir para publicar na `main`: listar ao Beny o que ainda está pendente e precisa de código, para entrar no mesmo deploy. Deixar claro o que é só dado (editável pelo app, sem custo)
 - Mudanças grandes primeiro numa branch (deploy de branch é grátis); a branch usa os mesmos dados do Blobs que produção
 
 ## Pendente
