@@ -244,6 +244,13 @@ h3{font-size:18px;margin:0;font-weight:700;line-height:1.25}
 .opt-antes{font-size:14px;color:var(--mute);margin:2px 0 0 4px}
 .day-f{display:flex;align-items:center;gap:6px;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
 /* map */
+.lmap-wrap{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--sunk)}
+#lmap{height:min(70vh,560px);width:100%;position:relative}
+.stop-pin span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;border:2px solid #2B2623;font:700 14px var(--f-body)}
+.leaflet-popup-content .pop{font:15px var(--f-body);min-width:180px}
+.leaflet-popup-content .pop .tag{font-size:12px}
+.stop-row{width:100%;border:0;background:none;text-align:left;color:inherit}
+.stop-row + .stop-row{border-top:1px solid var(--line)}
 .mapbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:6px;overflow:hidden}
 svg.map{display:block;width:100%;height:auto}
 .map .ridge{fill:var(--sky);opacity:.12}
@@ -263,6 +270,7 @@ svg.map{display:block;width:100%;height:auto}
 .legend span{display:inline-flex;align-items:center;gap:7px}
 .legend i{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid var(--fg);background:var(--surface)}
 .legend i.reserva{background:var(--l1);border-color:var(--l1)}
+.legend i.hotel{background:var(--sky);border-color:var(--sky)}
 .legend i.montanha{background:var(--l2);border-color:var(--l2)}
 /* water timeline */
 .tl{display:flex;flex-direction:column}
@@ -490,6 +498,7 @@ const S={base:null,data:null,queue:[],view:"hoje",sub:{roteiro:"dias",listas:"ch
 (()=>{try{const u=new URL(location.href);const k=u.searchParams.get("k");if(k){ls.set("w_k",k);u.searchParams.delete("k");history.replaceState(null,"",u.pathname+u.search+u.hash)}}catch(e){}})();
 S.key=ls.get("w_k")||"";
 S.me=ls.get("w_me")||null;
+S.mapMode=ls.get("w_mapmode")||"real";
 try{S.queue=JSON.parse(ls.get("w_queue")||"[]")}catch(e){S.queue=[]}
 try{const c=JSON.parse(ls.get("w_data")||"null");if(c){S.base=c.data;S.savedAt=c.at||0}}catch(e){}
 // ?hoje=2026-12-25 previews the app as on that day (not saved)
@@ -854,10 +863,110 @@ function runs(list){
   }
   return out.join(" · ");
 }
+/* real map: Leaflet (vendored, so it works offline) over OpenTopoMap relief tiles; tiles seen once are kept by the service worker.
+   Positions are approximate and the lines follow the main roads only roughly. */
+const GEO={mendoza:[-32.857,-68.893],valle:[-34.79,-68.52],pincheira:[-35.525,-69.80],payunia:[-36.10,-69.30],llancanelo:[-35.60,-69.18],potrerillos:[-32.955,-69.195],uspallata:[-32.59,-69.33],penitentes:[-32.835,-69.845]};
+const GEO_HOTEL=[-32.889,-68.845];
+const VIA={"mendoza>valle":[[-33.04,-68.88],[-33.57,-69.02],[-34.0,-69.08],[-34.62,-68.33]],
+  "valle>pincheira":[[-34.62,-68.33],[-34.95,-68.90],[-35.08,-69.58],[-35.475,-69.585]],
+  "pincheira>payunia":[[-35.475,-69.585],[-35.68,-69.60]],"payunia>llancanelo":[[-35.80,-69.40]],
+  "llancanelo>potrerillos":[[-35.475,-69.585],[-35.08,-69.58],[-34.0,-69.08],[-33.57,-69.02],[-33.04,-68.88],[-32.98,-69.0]],
+  "potrerillos>uspallata":[[-32.75,-69.28]],"uspallata>penitentes":[[-32.80,-69.55],[-32.87,-69.76]],
+  "penitentes>mendoza":[[-32.87,-69.76],[-32.80,-69.55],[-32.59,-69.33],[-32.52,-69.01]]};
+const TILE="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+function roteiroMapa(){
+  const real=S.mapMode!=="simples";
+  return `<p class="lead" style="margin:-4px 0 12px">A rota não é um círculo. São dois corredores que saem de Mendoza: primeiro o sul vulcânico pela RN40, depois a volta pelo mesmo eixo e a subida para os Andes pela RN7.</p>
+  <div class="seg" role="group" aria-label="Tipo de mapa" style="max-width:420px">${[["real","Mapa real"],["simples","Mapa simples"]].map(([k,l])=>`<button type="button" data-mapmode="${k}" aria-pressed="${(S.mapMode||"real")===k}">${l}</button>`).join("")}</div>
+  ${real?`<div class="lmap-wrap"><div id="lmap" role="region" aria-label="Mapa real da rota"></div></div>
+    <div class="legend"><span><i class="reserva"></i>Reserva natural</span><span><i></i>Camping com serviço</span><span><i class="montanha"></i>Montanha, sem serviço</span><span><i class="hotel"></i>Hotel</span></div>
+    <p class="by" style="margin:8px 0 0">Linha cheia: ida. Tracejada: a volta pelo mesmo eixo sul. Posições e linhas aproximadas; para dirigir, use o GPS. Mapa: © OpenStreetMap, OpenTopoMap (CC-BY-SA).</p>
+    <div class="card pad" style="margin-top:12px"><div class="row"><div style="flex:1;min-width:200px"><b>Mapa sem sinal</b><div class="muted small" id="tileInfo">${tileInfo()}</div></div>
+      <button class="btn sm" type="button" data-act="savetiles" ${S.online===false?"disabled":""}>${I.download}Guardar a região</button></div></div>
+    <div class="section"><div class="section-head"><h2>Paradas</h2></div><div class="card">${mapStops().map((m,k)=>`<button class="list-row stop-row" type="button" data-stop="${k}"><span class="who" style="background:${m.cor};color:${m.tinta}">${k+1}</span><span class="t"><b>${esc(m.nome)}</b><small>${esc(m.datas)} · ${esc(m.tipoNome)}</small></span></button>`).join("")}</div></div>`
+  :mapaEsquema()}`;
+}
+const tileInfo=()=>{const n=+ls.get("w_tiles")||0;return n?`Região guardada neste celular (${n} pedaços). Partes que você aproximar com sinal também ficam guardadas.`:"Com Wi-Fi, toque em Guardar a região. Assim o mapa abre na Payunia e no Aconcágua, onde quase não tem sinal."};
+// one marker per place in trip order (repeated places keep their first position)
+function mapStops(){
+  const ds=days(); const out=[]; const seen={};
+  for(const x of ds){
+    if(!x.pernoite)continue;
+    const p=stayOf(x.pernoite); const key=x.pernoite==="hotel"?"hotel":x.ponto;
+    const ll=key==="hotel"?GEO_HOTEL:GEO[x.ponto]; if(!ll||!p)continue;
+    if(seen[key]){seen[key].dates.push(x.date);continue}
+    const tipo=p.tipo; const c={reserva:["#5E7D3A","#fff"],montanha:["#B87A10","#fff"],hotel:["#3D6E8C","#fff"]}[tipo]||["#FFFBF5","#2B2623"];
+    seen[key]={key,ll,dates:[x.date],dayId:x.id,stay:p.id,nome:stayName(p),tipoNome:TIPOS[tipo]||tipo,cor:c[0],tinta:c[1],lugar:PT_NAME[x.ponto]||""};
+    out.push(seen[key]);
+  }
+  out.forEach(m=>m.datas=runs(m.dates));
+  return out;
+}
+// open a day card from anywhere, also when the Roteiro tab is already open (no hashchange then)
+function goDay(id){
+  S.sub.roteiro="dias";
+  if(location.hash.slice(1)==="roteiro")render();else location.hash="roteiro";
+  setTimeout(()=>document.getElementById("dia-"+id)?.scrollIntoView({block:"start"}),80);
+}
+function loadLeaflet(){
+  if(window.L)return Promise.resolve();
+  if(!S.leafletP)S.leafletP=new Promise((ok,no)=>{
+    let n=0; const one=()=>{if(++n===2)ok()}; const fail=()=>{S.leafletP=null;no()};
+    const css=document.createElement("link");css.rel="stylesheet";css.href="/vendor/leaflet/leaflet.css";css.onload=one;css.onerror=fail;document.head.appendChild(css);
+    const js=document.createElement("script");js.src="/vendor/leaflet/leaflet.js";js.onload=one;js.onerror=fail;document.head.appendChild(js);
+  });
+  return S.leafletP;
+}
+function initMap(){
+  const el=document.getElementById("lmap"); if(!el)return;
+  loadLeaflet().then(()=>{
+    if(!document.body.contains(el))return;
+    const prev=S.map?{c:S.map.getCenter(),z:S.map.getZoom()}:null;
+    if(S.map){S.map.remove();S.map=null}
+    const map=L.map(el,{zoomControl:true,attributionControl:false,tap:true});
+    L.tileLayer(TILE,{subdomains:"abc",maxZoom:15,minZoom:5,crossOrigin:true}).addTo(map);
+    const ds=days(); const seq=[];
+    for(const x of ds){if(!x.pernoite||x.pernoite==="hotel")continue;if(seq[seq.length-1]!==x.ponto&&GEO[x.ponto])seq.push(x.ponto)}
+    const accent=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#B4462B";
+    for(let k=1;k<seq.length;k++){
+      const a=seq[k-1],b=seq[k]; const back=a==="llancanelo"&&b==="potrerillos";
+      L.polyline([GEO[a],...(VIA[a+">"+b]||[]),GEO[b]],{color:accent,weight:back?3:4,opacity:.9,dashArray:back?"8 8":null}).addTo(map);
+    }
+    const stops=mapStops(); const t=today(); S.mapMarkers=[];
+    stops.forEach((m,k)=>{
+      const isToday=m.dates.includes(t);
+      const icon=L.divIcon({className:"stop-pin",html:`<span style="background:${m.cor};color:${m.tinta}${isToday?";box-shadow:0 0 0 4px "+accent:""}">${k+1}</span>`,iconSize:[30,30],iconAnchor:[15,15]});
+      const p=stayOf(m.stay);
+      const mk=L.marker(m.ll,{icon,title:m.nome}).addTo(map).bindPopup(`<div class="pop"><b>${esc(m.nome)}</b><div class="muted">${esc(m.datas)} · ${esc(m.tipoNome)}</div>${p?`<div class="stay-tags" style="margin:6px 0">${stayTags(p)}</div>`:""}<a href="#roteiro" data-goday="${esc(m.dayId)}">Ver o dia</a></div>`);
+      S.mapMarkers.push(mk);
+    });
+    map.invalidateSize();
+    if(prev)map.setView(prev.c,prev.z);else map.fitBounds(L.latLngBounds(stops.map(m=>m.ll)).pad(.08));
+    // Leaflet keeps clicks inside popups to itself, so the link is wired here
+    map.on("popupopen",ev=>{const a=ev.popup.getElement().querySelector("[data-goday]");if(a)a.onclick=e=>{e.preventDefault();goDay(a.dataset.goday)}});
+    S.map=map;
+  }).catch(()=>{el.innerHTML=`<div class="empty" style="margin:12px">O mapa real não carregou neste aparelho. Use o <b>Mapa simples</b>.</div>`});
+}
+// small, polite prefetch: the whole route up to zoom 10 and the area around each stop at zoom 11 and 12
+async function saveTiles(){
+  if(S.savingTiles)return; S.savingTiles=true;
+  const tile=(lat,lon,z)=>{const n=2**z;return [Math.floor((lon+180)/360*n),Math.floor((1-Math.asinh(Math.tan(lat*Math.PI/180))/Math.PI)/2*n)]};
+  const list=new Set();
+  for(let z=6;z<=10;z++){const[x0,y0]=tile(-32.45,-70.0,z),[x1,y1]=tile(-36.2,-68.25,z);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)list.add(`${z}/${x}/${y}`)}
+  for(const ll of [...Object.values(GEO),GEO_HOTEL])for(const z of [11,12]){const[cx,cy]=tile(ll[0],ll[1],z);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)list.add(`${z}/${cx+dx}/${cy+dy}`)}
+  const all=[...list]; let done=0, fail=0; const info=()=>document.getElementById("tileInfo");
+  const work=async()=>{while(all.length){const t=all.shift();try{const r=await fetch(`https://${"abc"[done%3]}.tile.opentopomap.org/${t}.png`,{mode:"cors"});if(!r.ok)fail++}catch(e){fail++}done++;
+    if(info())info().textContent=`Guardando… ${done} de ${list.size}`}};
+  await Promise.all([work(),work(),work()]);
+  S.savingTiles=false; ls.set("w_tiles",String(done-fail));
+  if(info())info().textContent=tileInfo();
+  toast(fail?`Guardado em parte (${done-fail} de ${list.size}). Tente de novo com Wi-Fi.`:"Mapa guardado neste celular");
+}
+
 /* map: geography stays fixed; the dates on each stop come from the current order */
 const PTS={mendoza:[376,167],potrerillos:[312,182],uspallata:[285,101],penitentes:[193,151],valle:[440,600],pincheira:[204,741],llancanelo:[325,789],payunia:[303,917]};
 const PT_NAME={mendoza:"MENDOZA",potrerillos:"POTRERILLOS",uspallata:"USPALLATA",penitentes:"LOS PENITENTES",valle:"VALLE GRANDE",pincheira:"PINCHEIRA",llancanelo:"LLANCANELO",payunia:"LA PAYUNIA"};
-function roteiroMapa(){
+function mapaEsquema(){
   const ds=days(); const t=today();
   const dates=k=>runs(ds.filter(x=>x.ponto===k&&x.pernoite).map(x=>x.date));
   const kind=k=>{const x=ds.find(d=>d.ponto===k);const p=x&&stayOf(x.pernoite);return p?p.tipo:"camping"};
@@ -865,8 +974,7 @@ function roteiroMapa(){
   const dot=(k,r=7)=>{const[x,y]=PTS[k];return `${todayPt===k?`<circle class="ring" cx="${x}" cy="${y}" r="15"/>`:""}<circle class="dot ${kind(k)==="reserva"?"reserva":kind(k)==="montanha"?"montanha":""}" cx="${x}" cy="${y}" r="${r}"/>`};
   const lbl=(k,dx,dy,anchor,extra="")=>{const[x,y]=PTS[k];return `<text class="pn" x="${x+dx}" y="${y+dy}" text-anchor="${anchor}">${PT_NAME[k]}</text><text class="pd" x="${x+dx}" y="${y+dy+19}" text-anchor="${anchor}">${esc(dates(k))}${extra}</text>`};
   const back=ds.find(x=>x.ponto==="potrerillos"&&x.de&&/llancanelo/i.test(x.de));
-  return `<p class="lead" style="margin:-4px 0 14px">A rota não é um círculo. São dois corredores que saem de Mendoza: primeiro o sul vulcânico pela RN40, depois a volta pelo mesmo eixo e a subida para os Andes pela RN7.</p>
-  <figure style="margin:0"><div class="mapbox"><svg class="map" viewBox="20 40 640 960" role="img" aria-label="Mapa da rota: corredor sul de Mendoza até Valle Grande, Pincheira, La Payunia e Llancanelo; volta ao norte; corredor oeste até Potrerillos, Uspallata e Los Penitentes, junto ao Aconcágua.">
+  return `<figure style="margin:0"><div class="mapbox"><svg class="map" viewBox="20 40 640 960" role="img" aria-label="Mapa da rota: corredor sul de Mendoza até Valle Grande, Pincheira, La Payunia e Llancanelo; volta ao norte; corredor oeste até Potrerillos, Uspallata e Los Penitentes, junto ao Aconcágua.">
     <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
     <path class="ridge" d="M150,70 L210,70 L190,240 L215,430 L185,640 L210,830 L170,980 L150,980 Z"/>
     <text class="corr" x="160" y="505" transform="rotate(-90 160 505)" text-anchor="middle">CORDILHEIRA DOS ANDES</text>
@@ -1091,6 +1199,7 @@ function render(){
   nav();
   m.innerHTML={hoje:viewHoje,roteiro:viewRoteiro,atividades:viewAtividades,listas:viewListas,custos:viewCustos,hotel:viewHotel}[S.view]();
   if(sheetRefresh)sheetRefresh();
+  if(document.getElementById("lmap"))initMap();else if(S.map){S.map.remove();S.map=null}
 }
 
 /* ---------- clicks ---------- */
@@ -1098,7 +1207,7 @@ document.getElementById("main").addEventListener("click",e=>{
   const t=e.target.closest("button,[data-sub],[data-goday],tr[data-editcost],tr[data-trail],a[data-tf]");if(!t)return;
   const ds=t.dataset;
   if(ds.sub){e.preventDefault();const[a,b]=ds.sub.split("|");S.sub[a]=b;if(S.view!==a){location.hash=a}else render();return}
-  if(ds.goday){e.preventDefault();S.sub.roteiro="dias";location.hash="roteiro";setTimeout(()=>document.getElementById("dia-"+ds.goday)?.scrollIntoView({block:"start"}),60);return}
+  if(ds.goday){e.preventDefault();goDay(ds.goday);return}
   if(ds.move){const[id,d]=ds.move.split("|");moveDay(id,+d)}
   else if(ds.swap)swapSheet(ds.swap);
   else if(ds.editday)daySheet(ds.editday);
@@ -1110,6 +1219,9 @@ document.getElementById("main").addEventListener("click",e=>{
   else if(ds.tf){S.trailFilter=ds.tf;render()}
   else if(ds.promote)promote(ds.promote);
   else if(ds.todof){S.todoFilter=ds.todof;render()}
+  else if(ds.mapmode){S.mapMode=ds.mapmode;ls.set("w_mapmode",ds.mapmode);render()}
+  else if(ds.stop!==undefined){const m=S.mapMarkers&&S.mapMarkers[+ds.stop];if(m&&S.map){S.map.setView(m.getLatLng(),11);m.openPopup();document.getElementById("lmap").scrollIntoView({block:"center",behavior:"smooth"})}}
+  else if(ds.act==="savetiles")saveTiles();
   else if(ds.tick){const c=D().checklist.find(x=>x.id===ds.tick);if(c)upd("checklist",c.id,c.feito?{feito:false,feitoPor:null}:{feito:true,feitoPor:S.me})}
   else if(ds.delcheck){const c=D().checklist.find(x=>x.id===ds.delcheck);if(c&&del("checklist",c.id,`tirou "${c.texto}" da lista`))toast("Item apagado",()=>setItem("checklist",c.id,c,`devolveu "${c.texto}" para a lista`))}
   else if(ds.done){const p=D().pendencias.find(x=>x.id===ds.done);if(p)upd("pendencias",p.id,p.feito?{feito:false,feitoPor:null,feitoEm:null}:{feito:true,feitoPor:S.me,feitoEm:Date.now()},p.feito?`reabriu a pendência "${p.titulo}"`:`resolveu "${p.titulo}"`)}

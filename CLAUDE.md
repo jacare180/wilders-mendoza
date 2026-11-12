@@ -6,7 +6,8 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
 
 - Netlify, deploy pelo repo GitHub jacare180/wilders-mendoza (público: no plano grátis, repo privado só aceita um contribuidor)
 - `public/index.html`: app inteiro em um arquivo (HTML/CSS/JS puro). Rotas por hash: `#hoje`, `#roteiro` (Dias, Mapa, Água, Reservas), `#atividades` (o antigo `#trilhas` ainda abre), `#listas` (Checklist, Pendências), `#custos`, `#hotel`
-- `public/sw.js`: service worker. Página com rede primeiro e cópia em cache sem sinal; fontes e fotos com cache primeiro
+- `public/sw.js`: service worker. Página com rede primeiro e cópia em cache sem sinal; fontes, fotos, `/vendor/` e pedaços do mapa com cache primeiro. Os pedaços do mapa ficam no cache `wilders-tiles`, que não é apagado quando a versão muda
+- Mapa real (Roteiro > Mapa): Leaflet 1.9.4 copiado em `public/vendor/leaflet` (carregado só nessa tela) com relevo do OpenTopoMap (`a|b|c.tile.opentopomap.org`, atribuição OSM/OpenTopoMap). Coordenadas em `GEO` e traçado aproximado em `VIA`. "Guardar a região" baixa uns 258 pedaços (rota até zoom 10, paradas em 11 e 12), 3 por vez; não aumentar muito, porque os servidores são voluntários. "Mapa simples" é o desenho antigo, que funciona sem nada baixado
 - `netlify/functions/api.mjs`: API com Netlify Blobs (store "wilders", consistência strong)
   - `GET /api/state` | `POST /api/write {op: set|update|delete, coll, id, data, who, log}` | `POST /api/import {dados, who}` | `POST /api/photo` | `GET /api/photo/:id`
   - Cada coleção é um blob só (`col/dias`, `col/pernoites`, `col/trilhas`, `col/checklist`, `col/pendencias`, `col/custos`, `col/hoteis`), mais `config` e `log`
@@ -52,7 +53,7 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
 - Circuito Los Volcanes é opcional e não escolhido; se escolhido, guia habilitado contratado antes e turno do passeio (não há autoguiado nem guia esperando no local). Ingresso do parque por veículo (ARS 46.700)
 - Visita dentro de Llancanelo exige turno e guia contratado antes; o percurso autoguiado pela Ruta 186 fica fora da reserva
 - Nenhum camping foi reservado ou pago (12/11). Suizo, Bosquecito e Luncay não aceitam reserva; Rincón e Pincheira com regra a confirmar; Tipi a combinar com Martín (os 20% de sinal eram referência de outubro)
-- Aconcágua: só cartão e reserva antecipada
+- Aconcágua: turno online antecipado, pago por cupom (Pago Fácil ou Mercado Pago); não vendem na entrada
 - Valle Grande municipal é só de dia; Vallecitos não permite pernoite de camper; Camping Municipal de Uspallata em reforma; Pincheira só aceita dinheiro, e a abertura em 24/12 veio de diretório (confirmar com o local); Laguna del Diamante fora (abre em janeiro)
 - O roteiro original era sem vinícolas; vinícola só entra se alguém da família sugerir (ex.: a indicada pelos tios)
 

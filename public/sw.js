@@ -1,6 +1,8 @@
 // Offline: the app shell and fonts come from the cache when there is no signal.
 // The trip data itself is kept by the page (localStorage), and changes made offline wait in a queue there.
-const V = "wilders-v3";
+const V = "wilders-v4";
+// map tiles live in their own cache, so a new app version does not throw away the region saved for the trip
+const TILES = "wilders-tiles";
 const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/apple-touch-icon.png"];
 
 self.addEventListener("install", (e) => {
@@ -8,7 +10,7 @@ self.addEventListener("install", (e) => {
 });
 
 self.addEventListener("activate", (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== V).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== V && k !== TILES).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener("fetch", (e) => {
@@ -20,6 +22,14 @@ self.addEventListener("fetch", (e) => {
     e.respondWith(
       fetch(req).then((r) => { const copy = r.clone(); caches.open(V).then((c) => c.put("/", copy)); return r; })
         .catch(() => caches.match("/"))
+    );
+    return;
+  }
+  // map tiles and the vendored map library: cache first, kept for offline use
+  if (/^[abc]\.tile\.opentopomap\.org$/.test(url.host) || url.pathname.startsWith("/vendor/")) {
+    const name = url.pathname.startsWith("/vendor/") ? V : TILES;
+    e.respondWith(
+      caches.open(name).then((c) => c.match(req).then((hit) => hit || fetch(req).then((r) => { if (r.ok) c.put(req, r.clone()); return r; })))
     );
     return;
   }
