@@ -29,6 +29,7 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
   - Informação confirmada pelo operador não é vaga reservada. Lugar `chegada` nunca aparece como "a reservar": aparece como "vaga não garantida"
   - Editar um pernoite envia só os campos que mudaram (`update`), para não desfazer a mudança de outro celular
 - Cartão do dia em blocos: "Antes da viagem" (próxima ação do pernoite, só na primeira noite, e o que as atividades do roteiro pedem antes), "No dia" (o que fazer, programas e avisos em lista neutra), "Pernoite / vaga" e "Passeios opcionais" (ideias). Atividades têm o campo `antes` (guia, turno, ingresso)
+- Avisos do dia que começam com `ANTES DA VIAGEM:`/`ANTES DO …:`, `NO DIA:`, `RESERVA DO …:`/`PARA DORMIR:` ou `PASSEIO(S) OPCIONA…:` aparecem no bloco correspondente, sem o rótulo (só na tela; o dado não muda). Se o dia tem aviso de "antes", a `proximaAcao` do pernoite não se repete no cartão
 - Resumo dos pernoites (Hoje e Reservas) conta por local e por noite, separando exigem reserva, sem reserva e regra a confirmar
 - Passo único `meta/situacao-v1` no `api.mjs`: grava backup em `backup/<timestamp>`, preenche os campos novos só onde estão vazios e troca textos só se ainda forem iguais ao texto original do app
 - Ordem dos dias em `config.ordem`; a data de cada dia vem da posição a partir de `config.inicio`. Só dias da fase camper mudam de lugar. Trilhas apontam para o dia pelo id (`dia`), então vão junto
