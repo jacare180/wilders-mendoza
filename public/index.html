@@ -200,7 +200,7 @@ h3{font-size:18px;margin:0;font-weight:700;line-height:1.25}
 .leg{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:6px;color:var(--mute);font-size:15px}
 .leg b{color:var(--fg)}
 .leg svg{width:16px;height:16px;vertical-align:-3px;margin-right:5px}
-.sleep{margin:0 16px 12px;border-radius:12px;background:var(--sunk);padding:12px 14px;display:grid;gap:6px}
+.sleep{margin:0;border-radius:12px;background:var(--sunk);padding:12px 14px;display:grid;gap:6px}
 .sleep.reserva{background:var(--l1-soft)}
 .sleep.montanha{background:var(--l2-soft)}
 .sleep.hotel{background:var(--sky-soft)}
@@ -221,10 +221,27 @@ h3{font-size:18px;margin:0;font-weight:700;line-height:1.25}
 .prog .t b{display:block;font-size:16px}
 .prog .t small{color:var(--mute);font-size:14px;display:block}
 .prog.idea{border-style:dashed;background:transparent}
-.prog.idea .t b{color:var(--mute)}
+.prog.idea .t b{color:var(--fg)}
 .prog .idea-k{color:var(--sky)!important;font-weight:700;font-size:13px!important}
 .price{font-size:16px}
 .price b{font-size:19px}
+.blk{padding:0 16px 12px}
+.blk-h{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--mute);margin:2px 0 6px}
+.blk > p{margin:0 0 8px}
+.acts{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.acts li{font-size:15px;padding:8px 10px;border-radius:10px;background:var(--sunk)}
+.acts li.next{background:var(--accent-soft)}
+.acts li .k{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink)}
+.notes{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
+.notes li{display:flex;gap:8px;font-size:15px;color:var(--mute)}
+.notes li::before{content:"";flex:none;width:5px;height:5px;border-radius:50%;background:var(--faint);margin-top:9px}
+.stay-tags{display:flex;flex-wrap:wrap;gap:6px}
+.next-act{font-size:15px;padding:8px 10px;border-radius:10px;background:var(--accent-soft)}
+.next-act b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink)}
+.rs-row{padding:12px 16px;display:grid;gap:4px}
+.rs-row + .rs-row{border-top:1px solid var(--line)}
+.rs-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}
+.opt-antes{font-size:14px;color:var(--mute);margin:2px 0 0 4px}
 .day-f{display:flex;align-items:center;gap:6px;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
 /* map */
 .mapbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:6px;overflow:hidden}
@@ -454,7 +471,9 @@ const RIDGE=`<svg class="ridge" viewBox="0 0 260 90" aria-hidden="true"><path d=
 const VIEWS=[["hoje","Hoje"],["roteiro","Roteiro"],["atividades","Atividades"],["listas","Listas"],["custos","Custos"],["hotel","Hotel"]];
 const LEVELS=[["Sem esforço","Só chegar e olhar"],["Fácil","Serve para todos"],["Moderada","Pede fôlego e calma"],["Difícil","Longa ou com altitude"]];
 const TIPOS={reserva:"Reserva natural",camping:"Camping com serviço",montanha:"Montanha, sem serviço",parque:"Parque",hotel:"Hotel"};
-const STATUS=[["a reservar","A reservar","todo"],["pendente","Esperando resposta","wait"],["reservado","Reservado","ok"],["confirmado","Confirmado","ok"]];
+const POLITICAS=[["reserva","Exige reserva antecipada"],["chegada","Sem reserva, por ordem de chegada"],["confirmar","Regra de reserva a confirmar"]];
+const SITUACOES=[["nao","Não reservado"],["aguardando","Aguardando resposta"],["concluida","Reserva concluída"]];
+const PAGS=[["nao","Não pago"],["parcial","Pago em parte"],["pago","Pago"]];
 const CATS=[["docs","Documentos"],["mala","Mala"],["mercado","Mercado"],["camper","Itens do camper"]];
 const COST_CATS=[["passagens","Passagens","#3D6E8C"],["camper","Camper","#2B2623"],["combustivel","Combustível","#8E6A3A"],["pernoites","Campings e reservas","#5E7D3A"],["hotel","Hotel","#7FAFCB"],["passeios","Passeios","#B4462B"],["transporte","Transporte","#5B7F99"],["comida","Comida e vinho","#C98A1B"],["seguro","Seguro","#9A8B7E"]];
 const PRIOS=[["risco","Risco","todo"],["alta","Importante","wait"],["normal","Normal",""]];
@@ -526,7 +545,36 @@ function priceParts(t){
 const priceLine=t=>priceParts(t).filter(Boolean).join(" · ");
 const tipoTag=t=>{const[,l,ic]=tipoOf(t);return `<span class="tag">${I[ic]}${l}</span>`};
 const lvlHtml=(n,mini)=>{n=Math.max(0,Math.min(3,+n||0));return `<span class="lvl l${n}${mini?" mini":""}" title="${esc(LEVELS[n][1])}"><span class="dots">${[1,2,3].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</span>${LEVELS[n][0]}</span>`};
-const statusTag=s=>{const st=STATUS.find(x=>x[0]===s);return st?`<span class="tag ${st[2]}">${st[1]}</span>`:""};
+const pol=p=>POLITICAS.some(x=>x[0]===p.politica)?p.politica:"confirmar";
+const sit=p=>SITUACOES.some(x=>x[0]===p.situacao)?p.situacao:"nao";
+const pag=p=>PAGS.some(x=>x[0]===p.pagStatus)?p.pagStatus:"nao";
+// a place without reservations is never "to book": the open question there is the spot itself
+function stayTags(p){
+  const pl=pol(p), st=sit(p), pg=pag(p);
+  const a={reserva:["Exige reserva",""],chegada:["Sem reserva · ordem de chegada",""],confirmar:["Regra de reserva a confirmar","wait"]}[pl];
+  const b=pl==="chegada"?(st==="aguardando"?["Aguardando resposta","wait"]:["Vaga não garantida",""])
+    :{nao:["Não reservado",pl==="reserva"?"todo":""],aguardando:["Aguardando resposta","wait"],concluida:["Reserva concluída","ok"]}[st];
+  const c={nao:["Não pago",""],parcial:["Pago em parte","wait"],pago:["Pago","ok"]}[pg];
+  return [a,b,c].map(([l,k])=>`<span class="tag ${k}">${esc(l)}</span>`).join("");
+}
+const stayName=p=>p.id==="hotel"&&chosenHotel()?chosenHotel().nome:p.nome;
+// nights per stay in trip order: { stayId: [day, ...] }
+function nightsBy(){const by={};for(const x of days())if(x.pernoite&&stayOf(x.pernoite))(by[x.pernoite]=by[x.pernoite]||[]).push(x);return by}
+function resumoPernoites(){
+  const by=nightsBy(); const ps=Object.keys(by).map(stayOf);
+  const nN=g=>g.reduce((a,p)=>a+by[p.id].length,0);
+  const row=(k,title,note)=>{const g=ps.filter(p=>pol(p)===k);if(!g.length)return"";
+    return `<div class="rs-row"><div class="rs-h"><b>${title}</b><span class="tag">${g.length} ${g.length===1?"local":"locais"} · ${nN(g)} ${nN(g)===1?"noite":"noites"}</span></div>
+      <div class="small">${g.map(p=>`${esc(stayName(p))} <span class="muted">(${runs(by[p.id].map(d=>d.date))})</span>`).join(" · ")}</div>${note(g)?`<div class="by">${note(g)}</div>`:""}</div>`};
+  const cnt=(g,f)=>g.filter(f).length;
+  const paid=cnt(ps,p=>pag(p)==="pago"), part=cnt(ps,p=>pag(p)==="parcial");
+  return `<div class="card rs">
+    ${row("reserva","Exigem reserva antecipada",g=>`${cnt(g,p=>sit(p)==="concluida")} de ${g.length} com reserva concluída${cnt(g,p=>sit(p)==="aguardando")?` · ${cnt(g,p=>sit(p)==="aguardando")} aguardando resposta`:""}`)}
+    ${row("chegada","Sem reserva, por ordem de chegada",()=>"Não há o que reservar. A vaga não é garantida.")}
+    ${row("confirmar","Regra de reserva a confirmar",()=>"Ainda não sabemos se precisam de reserva.")}
+    <div class="rs-row"><div class="rs-h"><b>Pagamento dos pernoites</b><span class="tag">${paid?paid+" de "+ps.length+" pagos":"nenhum pago"}${part?" · "+part+" em parte":""}</span></div></div>
+  </div>`;
+}
 const svcHtml=p=>{if(!p||p.tipo==="hotel")return"";const f=[["agua","Água",I.drop],["despejo","Despejo",I.dump],["chuveiro","Chuveiro",I.shower]].filter(([k])=>p[k]);
   return f.length?`<div class="svc">${f.map(([k,l,ic])=>`<span class="sv ${esc(p[k])}">${ic}${l}${p[k]==="confirmar"?"?":""}</span>`).join("")}</div>`:""};
 const telHref=t=>"tel:"+String(t||"").replace(/[^\d+]/g,"");
@@ -684,6 +732,7 @@ function viewHoje(){
   ${next?`<div class="section"><div class="section-head"><h2>Amanhã</h2></div>${dayCard(next,true)}</div>`:""}
   ${open.length?`<div class="section"><div class="section-head"><h2>Falta resolver</h2><a class="more" href="#listas" data-sub="listas|todo">Ver as ${open.length}</a></div>
     <div class="card">${open.slice(0,4).map(p=>todoRow(p,true)).join("")}</div></div>`:""}
+  <div class="section"><div class="section-head"><h2>Pernoites</h2><a class="more" href="#roteiro" data-sub="roteiro|reservas">Contatos e próximas ações</a></div>${resumoPernoites()}</div>
   <div class="section"><div class="section-head"><h2>Novidades</h2></div>
     ${log.length?`<div class="card">${log.map(l=>`<div class="list-row"><span class="who">${initial(l.who)}</span><div class="t"><b>${esc(l.who)} ${esc(l.txt)}</b><time>${l.pending?"esperando sinal para enviar":ago(l.at)}</time></div></div>`).join("")}</div>`
       :`<div class="empty"><b>Nada por aqui ainda</b>Quando alguém marcar, adicionar ou sugerir algo, aparece aqui.</div>`}
@@ -713,29 +762,43 @@ function roteiroDias(){
 }
 function dayCard(x,compact,i,len){
   const p=stayOf(x.pernoite); const h=x.pernoite==="hotel"?chosenHotel():null;
-  const isToday=x.date===today();
+  const isToday=x.date===today(); const started=today()>=(days()[0]?.date||"9");
+  const first=p?(nightsBy()[p.id]||[])[0]:null; const repeat=!!(first&&first.id!==x.id);
+  const progs=trailsOf(x.id); const plan=progs.filter(t=>!isIdea(t)), opts=progs.filter(isIdea);
   const tipo=p?p.tipo:"";
-  const progs=trailsOf(x.id);
   const leg=x.para?`<div class="leg"><span>${I.car}${x.de?esc(x.de)+" → ":""}<b>${esc(x.para)}</b></span>${+x.km?`<span><b>${fmt(x.km)} km</b>${x.horas?" · "+esc(x.horas):""}</span>`:""}${x.kmFonte==="estimativa"&&+x.km?`<span class="tag">estimativa</span>`:""}</div>`:(+x.km?`<div class="leg"><span>${I.car}${fmt(x.km)} km${x.horas?" · "+esc(x.horas):""}</span></div>`:`<div class="leg">Sem deslocamento</div>`);
+  // what still has to happen before we get there: the stay's next step once (first night), then bookings for planned activities
+  const antes=[];
+  if(p&&!repeat&&sit(p)!=="concluida"){
+    if(p.proximaAcao)antes.push(p.proximaAcao);
+    else D().pendencias.filter(q=>q.pernoite===p.id&&!q.feito).forEach(q=>antes.push(q.titulo));
+  }
+  plan.filter(t=>t.antes).forEach(t=>antes.push(`${t.nome}: ${t.antes}`));
+  const blk=(title,body)=>body?`<div class="blk"><div class="blk-h">${title}</div>${body}</div>`:"";
+  const antesHtml=antes.length?`<ol class="acts">${antes.map((a,k)=>`<li${k===0?' class="next"':""}>${k===0?'<span class="k">Próxima ação</span>':""}${esc(a)}</li>`).join("")}</ol>`:"";
+  const noDia=[x.fazer?`<p>${esc(x.fazer)}</p>`:"",plan.length?`<div class="progs">${plan.map(progRow).join("")}</div>`:"",
+    (x.avisos||[]).length?`<ul class="notes">${x.avisos.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""].join("");
   const sleep=p?`<div class="sleep ${esc(tipo)}">
-      <div class="top-l"><span class="k">Dormimos</span><span class="tag ${tipo==="reserva"?"res":tipo==="montanha"?"mtn":tipo==="hotel"?"sky":""}">${esc(TIPOS[tipo]||tipo)}</span>${p.precoArs===0?`<span class="tag ok">Grátis</span>`:""}${statusTag(p.status)}</div>
+      <div class="top-l"><span class="tag ${tipo==="reserva"?"res":tipo==="montanha"?"mtn":tipo==="hotel"?"sky":""}">${esc(TIPOS[tipo]||tipo)}</span>${p.precoArs===0?`<span class="tag ok">Grátis</span>`:""}</div>
       <h4>${esc(h?h.nome:p.nome)}${p.lugar&&!h?` <span class="muted" style="font-weight:400">· ${esc(p.lugar)}</span>`:""}</h4>
+      <div class="stay-tags">${stayTags(p)}</div>
+      ${repeat?`<div class="muted small">Mesmo pernoite da noite de ${dm(first.date)}: o que falta está lá.</div>`:`
+      ${p.regra?`<div class="small">${esc(p.regra)}</div>`:""}
       ${p.precoArs?`<div class="meta"><span>${ars(p.precoArs)} por noite (${brl(toBRL(p.precoArs,"ARS"))})</span>${p.pagamento?`<span>${esc(p.pagamento)}</span>`:""}</div>`:p.pagamento?`<div class="meta"><span>${esc(p.pagamento)}</span></div>`:""}
       ${p.horario?`<div class="meta"><span>${I.clock}${esc(p.horario)}</span></div>`:""}
-      ${svcHtml(p)}
+      ${svcHtml(p)}`}
       <div class="row">${p.telefone?`<a class="btn sm" href="${telHref(p.telefone)}">${I.phone}Ligar</a>`:""}${waHref(p.telefone)?`<a class="btn sm" href="${waHref(p.telefone)}" target="_blank" rel="noopener">${I.chat}WhatsApp</a>`:""}<a class="btn sm ghost" href="${esc(mapsHref((h?h.nome:p.nome)+" "+(p.lugar||"Mendoza")))}" target="_blank" rel="noopener">${I.pin}Mapa</a><button class="btn sm ghost" type="button" data-stay="${esc(p.id)}">Detalhes</button></div>
-    </div>`:x.fase==="volta"?`<div class="sleep hotel"><div class="top-l"><span class="k">Volta</span></div><h4>${esc(C().voo?.volta||"Voo de volta")}</h4></div>`:"";
+    </div>`:x.fase==="volta"?`<div class="sleep hotel"><h4>${esc(C().voo?.volta||"Voo de volta")}</h4></div>`:"";
+  const optHtml=opts.length?`<div class="progs">${opts.map(t=>progRow(t)+(t.antes?`<div class="opt-antes">${esc(t.antes)}</div>`:"")).join("")}</div>`:"";
   const flexTag=x.coringa?`<span class="tag sky" title="Dia que pode ser trocado, encurtado ou usado se o tempo virar">Dia coringa</span>`:"";
   const canMove=x.fase==="camper"&&!compact;
   return `<section class="card day${isToday?" today":""}${x.coringa?" flex":""}" id="dia-${esc(x.id)}">
     <div class="day-h"><div class="date"><span>${wd(x.date)}</span><b>${x.date.slice(8,10)}</b><small>${x.date.slice(5,7)==="12"?"dez":"jan"}</small></div>
       <div class="t"><div class="row" style="gap:6px;margin-bottom:4px">${isToday?`<span class="tag hot">Hoje</span>`:""}${flexTag}</div><h3>${esc(x.titulo)}</h3>${leg}</div></div>
-    ${sleep}
-    <div class="day-b">
-      ${x.fazer?`<p>${esc(x.fazer)}</p>`:""}
-      ${progs.length?`<div class="progs">${progs.slice().sort((a,b)=>(isIdea(a)?1:0)-(isIdea(b)?1:0)).map(progRow).join("")}</div>`:""}
-      ${(x.avisos||[]).length?`<ul class="alerts">${x.avisos.map(a=>`<li>${I.alert}<span>${esc(a)}</span></li>`).join("")}</ul>`:""}
-    </div>
+    ${blk(started?"Antes de chegar":"Antes da viagem",antesHtml)}
+    ${blk("No dia",noDia)}
+    ${blk(x.fase==="volta"?"Volta":"Pernoite / vaga",sleep)}
+    ${blk("Passeios opcionais · ainda não escolhidos",optHtml)}
     ${compact?"":`<div class="day-f">
       ${canMove?`<button class="btn sm icon" type="button" data-move="${esc(x.id)}|-1" aria-label="Subir um dia" ${i===0?"disabled":""}>${I.up}</button><button class="btn sm icon" type="button" data-move="${esc(x.id)}|1" aria-label="Descer um dia" ${i===len-1?"disabled":""}>${I.down}</button><button class="btn sm" type="button" data-swap="${esc(x.id)}">${I.swap}Trocar</button>`:""}
       <button class="btn sm ghost" type="button" data-addprog="${esc(x.id)}">${I.plus}Programa</button>
@@ -746,7 +809,7 @@ function dayCard(x,compact,i,len){
 function progRow(t){
   const sub=[t.tempo,t.quem&&t.quem!=="todos"&&t.tipo==="trilha"?quemLabel(t.quem):"",hasPrice(t)?priceParts(t)[0]:""].filter(Boolean).join(" · ");
   const badge=t.tipo==="trilha"?lvlHtml(t.nivel,true):`<span class="tag">${I[tipoOf(t)[2]]}</span>`;
-  return `<button class="prog${isIdea(t)?" idea":""}" type="button" data-trail="${esc(t.id)}">${badge}<span class="t">${isIdea(t)?`<small class="idea-k">Sugestão${t.by?" de "+esc(t.by):""}</small>`:""}<b>${esc(t.nome)}</b>${sub?`<small>${esc(sub)}</small>`:""}</span></button>`;
+  return `<button class="prog${isIdea(t)?" idea":""}" type="button" data-trail="${esc(t.id)}">${badge}<span class="t">${isIdea(t)&&t.by?`<small class="idea-k">Sugestão de ${esc(t.by)}</small>`:""}<b>${esc(t.nome)}</b>${sub?`<small>${esc(sub)}</small>`:""}</span></button>`;
 }
 const quemLabel=q=>q==="todos"?"Para todos":q==="avaliar"?"Avaliar se todos fazem":q;
 
@@ -840,13 +903,18 @@ function roteiroReservas(){
   const ds=days(); const cam=C().camper||{};
   const nights=id=>ds.filter(x=>x.pernoite===id).map(x=>dm(x.date));
   const list=D().pernoites.slice().sort((a,b)=>{const ia=ds.findIndex(x=>x.pernoite===a.id),ib=ds.findIndex(x=>x.pernoite===b.id);return (ia<0?99:ia)-(ib<0?99:ib)});
-  return `<div class="card stay" style="margin-bottom:14px"><div class="stay-b"><div class="row"><span class="tag">${I.car}Camper</span><h3>${esc(cam.locadora||"Locadora a anotar")}</h3></div>
+  return `<p class="lead" style="margin:-4px 0 12px">Para cada lugar: a <b>regra</b> (se exige reserva), a <b>nossa situação</b> e o <b>pagamento</b>. Informação confirmada pelo camping não quer dizer vaga reservada.</p>
+  ${resumoPernoites()}
+  <div class="card stay" style="margin:14px 0"><div class="stay-b"><div class="row"><span class="tag">${I.car}Camper</span><h3>${esc(cam.locadora||"Locadora a anotar")}</h3></div>
       <dl class="kv"><dt>Veículo</dt><dd>${esc(cam.veiculo||"")}</dd><dt>Retirada</dt><dd>${esc(cam.retirada||"")}</dd><dt>Devolução</dt><dd>${esc(cam.devolucao||"")}</dd>${cam.contato?`<dt>Contato</dt><dd>${esc(cam.contato)}</dd>`:""}${cam.nota?`<dt>Nota</dt><dd>${esc(cam.nota)}</dd>`:""}</dl></div>
     <div class="stay-f">${cam.contato&&/\d{6,}/.test(cam.contato)?`<a class="btn sm" href="${telHref(cam.contato)}">${I.phone}Ligar</a>`:""}<button class="btn sm ghost right" type="button" data-act="camper">${I.edit}Editar</button></div></div>
   <div class="grid two">${list.map(p=>{const n=nights(p.id);const h=p.id==="hotel"?chosenHotel():null;return `<div class="card stay"><div class="stay-b">
-      <div class="row"><span class="tag ${p.tipo==="reserva"?"res":p.tipo==="montanha"?"mtn":p.tipo==="hotel"?"sky":""}">${esc(TIPOS[p.tipo]||p.tipo)}</span>${statusTag(p.status)}</div>
+      <div class="row"><span class="tag ${p.tipo==="reserva"?"res":p.tipo==="montanha"?"mtn":p.tipo==="hotel"?"sky":""}">${esc(TIPOS[p.tipo]||p.tipo)}</span></div>
       <h3>${esc(h?h.nome:p.nome)}</h3><div class="muted small">${esc(p.lugar||"")}${n.length?` · ${n.length===1?"noite":"noites"} ${n.join(" e ")}`:""}</div>
-      <dl class="kv">${p.precoNota?`<dt>Preço</dt><dd>${esc(p.precoNota)}</dd>`:""}${p.pagamento?`<dt>Pagamento</dt><dd>${esc(p.pagamento)}</dd>`:""}${p.horario?`<dt>Horário</dt><dd>${esc(p.horario)}</dd>`:""}${p.telefone?`<dt>Telefone</dt><dd>${esc(p.telefone)}</dd>`:""}${p.email?`<dt>E-mail</dt><dd>${esc(p.email)}</dd>`:""}</dl>
+      <div class="stay-tags">${stayTags(p)}</div>
+      ${p.proximaAcao&&sit(p)!=="concluida"?`<div class="next-act"><b>Próxima ação</b>${esc(p.proximaAcao)}</div>`:""}
+      ${p.regra?`<div class="small">${esc(p.regra)}</div>`:""}${p.fonte?`<div class="by">Fonte: ${esc(p.fonte)}</div>`:""}
+      <dl class="kv">${p.precoNota?`<dt>Preço</dt><dd>${esc(p.precoNota)}</dd>`:""}${p.pagamento?`<dt>Aceita</dt><dd>${esc(p.pagamento)}</dd>`:""}${p.horario?`<dt>Horário</dt><dd>${esc(p.horario)}</dd>`:""}${p.telefone?`<dt>Telefone</dt><dd>${esc(p.telefone)}</dd>`:""}${p.email?`<dt>E-mail</dt><dd>${esc(p.email)}</dd>`:""}</dl>
       ${svcHtml(p)}${p.obs?`<p class="muted small" style="margin:0">${esc(p.obs)}</p>`:""}</div>
       <div class="stay-f">${p.telefone?`<a class="btn sm" href="${telHref(p.telefone)}">${I.phone}Ligar</a>`:""}${waHref(p.telefone)?`<a class="btn sm" href="${waHref(p.telefone)}" target="_blank" rel="noopener">${I.chat}WhatsApp</a>`:""}${p.email?`<a class="btn sm ghost" href="mailto:${esc(p.email)}">${I.mail}E-mail</a>`:""}${p.link?`<a class="btn sm ghost" href="${esc(p.link)}" target="_blank" rel="noopener">${I.link}Site</a>`:""}<button class="btn sm ghost right" type="button" data-editstay="${esc(p.id)}">${I.edit}Editar</button></div>
       ${p.roteiro?`<details class="script"><summary>O que perguntar (em espanhol)</summary><pre>${esc(p.roteiro)}</pre></details>`:""}
@@ -876,9 +944,10 @@ function trailCard(t){
     <div class="row">${trilha?lvlHtml(t.nivel):""}${tipoTag(t)}${idea?`<span class="tag sky">Ideia</span>`:`<span class="tag ok">${I.check}No roteiro</span>`}</div>
     <h3>${esc(t.nome)}</h3>
     <div class="meta">${t.onde?`<span>${I.pin}${esc(t.onde)}</span>`:""}${d?`<span>${I.roteiro}${idea?"Sugerido para ":""}${wd(d.date)} ${dm(d.date)}</span>`:`<span class="tag">Sem dia ainda</span>`}</div>
-    ${hasPrice(t)?`<div class="price"><b>${esc(priceParts(t)[0])}</b>${priceParts(t)[1]?`<div class="muted small">${esc(priceParts(t)[1])}</div>`:""}${t.pago?` <span class="paid y">${I.check}Pago</span>`:""}${t.precoNota?`<div class="by">${esc(t.precoNota)}</div>`:""}</div>`:""}
+    ${hasPrice(t)?`<div class="price"><b>${esc(priceParts(t)[0])}</b>${idea?` <span class="tag">estimativa</span>`:""}${priceParts(t)[1]?`<div class="muted small">${esc(priceParts(t)[1])}</div>`:""}${t.pago?` <span class="paid y">${I.check}Pago</span>`:""}${t.precoNota?`<div class="by">${esc(t.precoNota)}</div>`:""}</div>`:""}
     ${(()=>{const f=facts.filter(([k])=>t[k]);return f.length?`<div class="facts" style="grid-template-columns:repeat(${f.length},minmax(0,1fr))">${f.map(([k,l])=>`<div><b>${esc(t[k])}</b><span>${l}</span></div>`).join("")}</div>`:""})()}
     ${t.quem?`<div class="row"><span class="tag ${t.quem==="todos"?"ok":"wait"}">${I.users}${esc(quemLabel(t.quem))}</span></div>`:""}
+    ${t.antes?`<div class="next-act" style="background:var(--sky-soft)"><b style="color:var(--sky)">${idea?"Se escolher":"Antes da viagem"}</b>${esc(t.antes)}</div>`:""}
     ${trilha&&t.leve?`<div class="lighter"><b>Opção mais leve:</b> ${esc(t.leve)}</div>`:""}
     ${t.obs?`<p class="muted">${esc(t.obs)}</p>`:""}
     ${t.link?`<a class="small" href="${esc(t.link)}" target="_blank" rel="noopener">Ver mais</a>`:""}
@@ -944,7 +1013,7 @@ function viewCustos(){
   return `<div class="page-head"><div class="eyebrow">Custos · ${n} pessoas</div><h1>${brl(t.pp)} por pessoa</h1>
     <p class="lead">Total do grupo <b>${brl(t.total)}</b>. ${t.meta?`${over?`<b style="color:var(--l3)">${brl(t.diff)} acima</b>`:`<b style="color:var(--l1)">${brl(-t.diff)} abaixo</b>`} da meta de ${brl(t.meta)} por pessoa.`:""} Sem divisão de quem pagou: é tudo da família.</p></div>
   <div class="stat"><div><b>${brl(t.ppPaid)}</b><span>já pago por pessoa (${brl(t.paid)} no grupo)</span></div><div><b>${brl(t.pp-t.ppPaid)}</b><span>a pagar por pessoa (${brl(t.open)} no grupo)</span></div></div>
-  ${t.ideas.length?`<a class="banner info" href="#atividades" data-tf="ideias" style="text-decoration:none">${I.info}<div><b>Ideias ainda não confirmadas: +${brl(t.ideasBRL/n)} por pessoa</b> (${t.ideas.length} ${t.ideas.length===1?"ideia":"ideias"}, ${brl(t.ideasBRL)} no grupo). Não entram no total até irem para o roteiro.</div></a>`:""}
+  ${t.ideas.length?`<a class="banner info" href="#atividades" data-tf="ideias" style="text-decoration:none">${I.info}<div><b>Opcionais ainda não escolhidos: +${brl(t.ideasBRL/n)} por pessoa</b> (estimativa de ${t.ideas.length} ${t.ideas.length===1?"ideia":"ideias"}, ${brl(t.ideasBRL)} no grupo). Ficam fora do custo-base até irem para o roteiro.</div></a>`:""}
   <div class="bar">${byCat.map(g=>{const v=g.items.reduce((a,i)=>a+i.brl,0);return `<i style="width:${t.total?v/t.total*100:0}%;background:${g.c}" title="${esc(g.l)}"></i>`}).join("")}</div>
   <div class="legend2">${byCat.map(g=>`<span><i style="background:${g.c}"></i>${esc(g.l)}</span>`).join("")}</div>
   <div class="section"><div class="section-head"><h2>Por categoria</h2><button class="btn sm right" type="button" data-act="newcost">${I.plus}Custo</button></div>
@@ -1104,8 +1173,11 @@ document.getElementById("importFile").addEventListener("change",async e=>{
 
 function stayView(id){
   const p=stayOf(id);if(!p)return;const h=id==="hotel"?chosenHotel():null;
-  openSheet(h?h.nome:p.nome,`<div class="row" style="margin-bottom:10px"><span class="tag">${esc(TIPOS[p.tipo]||p.tipo)}</span>${statusTag(p.status)}</div>
-    <dl class="kv">${p.lugar?`<dt>Onde</dt><dd>${esc(p.lugar)}</dd>`:""}${p.precoNota?`<dt>Preço</dt><dd>${esc(p.precoNota)}</dd>`:""}${p.pagamento?`<dt>Pagamento</dt><dd>${esc(p.pagamento)}</dd>`:""}${p.horario?`<dt>Horário</dt><dd>${esc(p.horario)}</dd>`:""}${p.telefone?`<dt>Telefone</dt><dd>${esc(p.telefone)}</dd>`:""}${p.email?`<dt>E-mail</dt><dd>${esc(p.email)}</dd>`:""}</dl>
+  openSheet(h?h.nome:p.nome,`<div class="row" style="margin-bottom:10px"><span class="tag">${esc(TIPOS[p.tipo]||p.tipo)}</span></div>
+    <div class="stay-tags" style="margin-bottom:10px">${stayTags(p)}</div>
+    ${p.proximaAcao&&sit(p)!=="concluida"?`<div class="next-act" style="margin-bottom:10px"><b>Próxima ação</b>${esc(p.proximaAcao)}</div>`:""}
+    ${p.regra?`<p style="margin:0 0 6px">${esc(p.regra)}</p>`:""}${p.fonte?`<p class="by" style="margin:0 0 10px">Fonte: ${esc(p.fonte)}</p>`:""}
+    <dl class="kv">${p.lugar?`<dt>Onde</dt><dd>${esc(p.lugar)}</dd>`:""}${p.precoNota?`<dt>Preço</dt><dd>${esc(p.precoNota)}</dd>`:""}${p.pagamento?`<dt>Aceita</dt><dd>${esc(p.pagamento)}</dd>`:""}${p.horario?`<dt>Horário</dt><dd>${esc(p.horario)}</dd>`:""}${p.telefone?`<dt>Telefone</dt><dd>${esc(p.telefone)}</dd>`:""}${p.email?`<dt>E-mail</dt><dd>${esc(p.email)}</dd>`:""}</dl>
     <div style="margin:10px 0">${svcHtml(p)}</div>${p.obs?`<p>${esc(p.obs)}</p>`:""}
     ${p.roteiro?`<h3 style="margin-top:16px">O que perguntar (em espanhol)</h3><pre style="white-space:pre-wrap;font-family:var(--f-body);font-size:17px;background:var(--sunk);border-radius:12px;padding:12px">${esc(p.roteiro)}</pre>`:""}
     <div class="row" style="margin-top:12px">${p.telefone?`<a class="btn primary" href="${telHref(p.telefone)}">${I.phone}Ligar</a>`:""}${waHref(p.telefone)?`<a class="btn" href="${waHref(p.telefone)}" target="_blank" rel="noopener">${I.chat}WhatsApp</a>`:""}<button class="btn ghost right" type="button" id="ed">${I.edit}Editar</button></div>`,
@@ -1118,10 +1190,16 @@ function staySheet(id){
     <div class="field"><label for="p-nome">Nome</label><input id="p-nome" required maxlength="80" value="${esc(p.nome||"")}"></div>
     <div class="field"><label for="p-lugar">Onde fica</label><input id="p-lugar" maxlength="80" value="${esc(p.lugar||"")}"></div>
     <div class="frow"><div class="field"><label for="p-tipo">Tipo</label><select id="p-tipo">${opt(Object.entries(TIPOS),p.tipo)}</select></div>
-      <div class="field"><label for="p-status">Reserva</label><select id="p-status">${opt(STATUS.map(s=>[s[0],s[1]]),p.status)}</select></div></div>
+    </div>
+    <div class="field"><label for="p-pol">Regra do lugar</label><select id="p-pol">${opt(POLITICAS,pol(p))}</select></div>
+    <div class="frow"><div class="field"><label for="p-sit">Nossa situação</label><select id="p-sit">${opt(SITUACOES,sit(p))}</select></div>
+      <div class="field"><label for="p-pgs">Pagamento</label><select id="p-pgs">${opt(PAGS,pag(p))}</select></div></div>
+    <div class="field"><label for="p-acao">Próxima ação</label><textarea id="p-acao" style="min-height:60px">${esc(p.proximaAcao||"")}</textarea></div>
+    <div class="field"><label for="p-regra">O que sabemos da regra e da vaga</label><textarea id="p-regra" style="min-height:60px">${esc(p.regra||"")}</textarea></div>
+    <div class="field"><label for="p-fonte">Fonte (quem disse e quando)</label><input id="p-fonte" maxlength="120" value="${esc(p.fonte||"")}"></div>
     <div class="frow"><div class="field"><label for="p-preco">Preço por noite, 3 pessoas (ARS)</label><input id="p-preco" inputmode="decimal" value="${p.precoArs??""}" placeholder="0 se for grátis"></div>
       <div class="field"><label for="p-precon">Como é cobrado</label><input id="p-precon" maxlength="80" value="${esc(p.precoNota||"")}"></div></div>
-    <div class="field"><label for="p-pag">Pagamento aceito</label><input id="p-pag" maxlength="80" value="${esc(p.pagamento||"")}" placeholder="Só dinheiro, cartão, transferência…"></div>
+    <div class="field"><label for="p-pag">Formas de pagamento aceitas</label><input id="p-pag" maxlength="80" value="${esc(p.pagamento||"")}" placeholder="Só dinheiro, cartão, transferência…"></div>
     <div class="field"><label for="p-hor">Horário limite de chegada, check-in e checkout</label><input id="p-hor" maxlength="100" value="${esc(p.horario||"")}"></div>
     <div class="frow"><div class="field"><label for="p-tel">Telefone</label><input id="p-tel" inputmode="tel" maxlength="40" value="${esc(p.telefone||"")}"></div><div class="field"><label for="p-mail">E-mail</label><input id="p-mail" inputmode="email" maxlength="80" value="${esc(p.email||"")}"></div></div>
     <div class="field"><label for="p-link">Site ou link da reserva</label><input id="p-link" value="${esc(p.link||"")}"></div>
@@ -1130,10 +1208,15 @@ function staySheet(id){
     <div class="field"><label for="p-rot">O que perguntar por telefone</label><textarea id="p-rot" style="min-height:120px">${esc(p.roteiro||"")}</textarea></div>
     <button class="btn primary" type="submit">Salvar</button></form>`,
   el=>el.querySelector("#pf").addEventListener("submit",e=>{e.preventDefault();
-    const next={...p,nome:val(el,"p-nome"),lugar:val(el,"p-lugar"),tipo:val(el,"p-tipo"),status:val(el,"p-status"),precoArs:num(el,"p-preco"),precoNota:val(el,"p-precon"),pagamento:val(el,"p-pag"),horario:val(el,"p-hor"),
+    const form={nome:val(el,"p-nome"),lugar:val(el,"p-lugar"),tipo:val(el,"p-tipo"),politica:val(el,"p-pol"),situacao:val(el,"p-sit"),pagStatus:val(el,"p-pgs"),
+      proximaAcao:val(el,"p-acao"),regra:val(el,"p-regra"),fonte:val(el,"p-fonte"),precoArs:num(el,"p-preco"),precoNota:val(el,"p-precon"),pagamento:val(el,"p-pag"),horario:val(el,"p-hor"),
       telefone:val(el,"p-tel"),email:val(el,"p-mail"),link:val(el,"p-link"),agua:val(el,"p-agua"),despejo:val(el,"p-despejo"),chuveiro:val(el,"p-chuveiro"),obs:val(el,"p-obs"),roteiro:el.querySelector("#p-rot").value};
-    delete next.id; closeSheet();
-    if(setItem("pernoites",id,next,`atualizou o pernoite "${next.nome}"${next.status!==p.status?" ("+(STATUS.find(s=>s[0]===next.status)||[,""])[1].toLowerCase()+")":""}`))toast("Salvo")}));
+    // only what changed, so an edit on one phone does not undo another phone's change to other fields
+    const diff=Object.fromEntries(Object.entries(form).filter(([k,v])=>(p[k]??"")!==(v??"")));
+    closeSheet(); if(!Object.keys(diff).length)return;
+    const lbl=(l,v)=>(l.find(x=>x[0]===v)||[,""])[1].toLowerCase();
+    const what=[diff.situacao?lbl(SITUACOES,diff.situacao):"",diff.pagStatus?lbl(PAGS,diff.pagStatus):"",diff.politica?lbl(POLITICAS,diff.politica):""].filter(Boolean).join(", ");
+    if(upd("pernoites",id,diff,`atualizou o pernoite "${form.nome}"${what?" ("+what+")":""}`))toast("Salvo")}));
 }
 function daySheet(id){
   const x=dayById(id);if(!x)return;
@@ -1180,6 +1263,7 @@ function trailSheet(id,dayId){
     <div class="field" data-not="trilha"><label for="t-tm2">Quanto tempo leva</label><input id="t-tm2" maxlength="30" value="${esc(t.tempo||"")}" placeholder="Meio dia, 40 min…"></div>
     <div class="field"><label for="t-q">Quem vai</label><select id="t-q">${opt([["todos","Para todos"],["avaliar","Avaliar se todos fazem"],["Beny e Alan","Só Beny e Alan"],["quem quiser","Quem quiser"]],t.quem)}</select></div>
     <div class="field" data-only="trilha"><label for="t-l">Opção mais leve</label><input id="t-l" maxlength="160" value="${esc(t.leve||"")}" placeholder="O que fazer se a trilha for puxada"></div>
+    <div class="field"><label for="t-an">O que precisa antes (guia, turno, ingresso)</label><input id="t-an" maxlength="200" value="${esc(t.antes||"")}" placeholder="Ex.: contratar guia e reservar o turno"></div>
     <div class="field"><label for="t-ob">Observações</label><textarea id="t-ob">${esc(t.obs||"")}</textarea></div>
     <div class="field"><label for="t-lk">Link</label><input id="t-lk" value="${esc(t.link||"")}" placeholder="https://…"></div>
     <div class="row"><button class="btn primary" type="submit">${id?"Salvar":"Sugerir"}</button>${id?`<button class="btn ghost right" type="button" id="tdel" style="color:var(--l3)">${I.trash}Apagar</button>`:""}</div></form>`,
@@ -1193,7 +1277,7 @@ function trailSheet(id,dayId){
     el.querySelector("#tf").addEventListener("submit",e=>{e.preventDefault();
       const tp=val(el,"t-tp"); const trilha=tp==="trilha";
       const next={...t,tipo:tp,nivel:trilha?lv:0,nome:val(el,"t-n"),dia:val(el,"t-d"),status:st,onde:val(el,"t-o"),tempo:trilha?val(el,"t-tm"):val(el,"t-tm2"),
-        km:trilha?val(el,"t-km"):"",desnivel:trilha?val(el,"t-ds"):"",leve:trilha?val(el,"t-l"):"",quem:val(el,"t-q"),obs:val(el,"t-ob"),link:val(el,"t-lk"),
+        km:trilha?val(el,"t-km"):"",desnivel:trilha?val(el,"t-ds"):"",leve:trilha?val(el,"t-l"):"",quem:val(el,"t-q"),antes:val(el,"t-an"),obs:val(el,"t-ob"),link:val(el,"t-lk"),
         preco:num(el,"t-pv"),moeda:val(el,"t-pm"),base:val(el,"t-pb"),qtd:val(el,"t-pb")==="pessoa"?+val(el,"t-qt"):null,precoNota:val(el,"t-pn"),pago:el.querySelector("#t-pg").checked};
       if(!id){next.by=S.me;next.criado=Date.now()} delete next.id; closeSheet();
       const d=dayById(next.dia);

@@ -21,6 +21,16 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
   - `status`: `ideia` (pode ter dia sugerido, aparece tracejada no dia, fica fora do total) ou `roteiro` (sem status conta como roteiro). "Colocar no roteiro" muda para `roteiro`
   - Custos somam as atividades no roteiro por categoria (trilha, passeio e outro em Passeios; `transporte`; `comida` em Comida e vinho) e mostram as ideias numa linha à parte
   - Passo único `meta/atividades-v1` no `api.mjs`: passou os preços das linhas de custo de passeios para as atividades e marcou essas linhas com `substituidoPor` (não apagou). O app ignora linhas com `substituidoPor`
+- Pernoites têm três fatos separados (o antigo `status` fica guardado, mas não aparece mais):
+  - `politica`: `reserva` (exige reserva antecipada), `chegada` (sem reserva, por ordem de chegada) ou `confirmar` (regra a confirmar)
+  - `situacao`: `nao` (não reservado), `aguardando` (aguardando resposta) ou `concluida` (reserva concluída)
+  - `pagStatus`: `nao`, `parcial` ou `pago`. O campo `pagamento` continua sendo as formas de pagamento aceitas
+  - mais `proximaAcao`, `regra` (o que sabemos da regra e da vaga) e `fonte` (quem disse e quando)
+  - Informação confirmada pelo operador não é vaga reservada. Lugar `chegada` nunca aparece como "a reservar": aparece como "vaga não garantida"
+  - Editar um pernoite envia só os campos que mudaram (`update`), para não desfazer a mudança de outro celular
+- Cartão do dia em blocos: "Antes da viagem" (próxima ação do pernoite, só na primeira noite, e o que as atividades do roteiro pedem antes), "No dia" (o que fazer, programas e avisos em lista neutra), "Pernoite / vaga" e "Passeios opcionais" (ideias). Atividades têm o campo `antes` (guia, turno, ingresso)
+- Resumo dos pernoites (Hoje e Reservas) conta por local e por noite, separando exigem reserva, sem reserva e regra a confirmar
+- Passo único `meta/situacao-v1` no `api.mjs`: grava backup em `backup/<timestamp>`, preenche os campos novos só onde estão vazios e troca textos só se ainda forem iguais ao texto original do app
 - Ordem dos dias em `config.ordem`; a data de cada dia vem da posição a partir de `config.inicio`. Só dias da fase camper mudam de lugar. Trilhas apontam para o dia pelo id (`dia`), então vão junto
 - Custos: `auto: "pernoites"` soma o preço dos pernoites dos dias de camper; `auto: "hotel"` usa o hotel escolhido na aba Hotel, ou a estimativa enquanto nenhum for escolhido. Câmbio editável em `config.cambio`
 - `?hoje=AAAA-MM-DD` mostra o app como se fosse aquele dia (para testar)
@@ -36,10 +46,12 @@ App "Wilders em Mendoza": viagem de família (Beny, Alan e Ilana) de camper por 
 ## Regras da viagem (verificadas, não contradizer)
 
 - Nunca dormir em posto ou beira de estrada; posto só como parada técnica de dia
-- La Payunia exige guia; tarifa do parque por veículo (ARS 46.700). Acampe La Amarga: entrada a partir das 18h, saída até 12h
-- Llancanelo: circuito parcial autoguiado; completo exige guia
+- Acampe em La Amarga (Payunia) e El Sauce (Llancanelo): dormir no camper não exige guia (Turismo Malargüe, 11/11). Reservar e pagar no turnero ANP, que abre mês a mês. La Amarga: entrada a partir das 18h, saída até 12h
+- Circuito Los Volcanes é opcional e não escolhido; se escolhido, guia habilitado contratado antes e turno do passeio (não há autoguiado nem guia esperando no local). Ingresso do parque por veículo (ARS 46.700)
+- Visita dentro de Llancanelo exige turno e guia contratado antes; o percurso autoguiado pela Ruta 186 fica fora da reserva
+- Nenhum camping foi reservado ou pago (12/11). Suizo, Bosquecito e Luncay não aceitam reserva; Rincón e Pincheira com regra a confirmar; Tipi a combinar com Martín (os 20% de sinal eram referência de outubro)
 - Aconcágua: só cartão e reserva antecipada
-- Valle Grande municipal é só de dia; Vallecitos não permite pernoite de camper; Camping Municipal de Uspallata em reforma; Pincheira abre 24/12 e só aceita dinheiro; Laguna del Diamante fora (abre em janeiro)
+- Valle Grande municipal é só de dia; Vallecitos não permite pernoite de camper; Camping Municipal de Uspallata em reforma; Pincheira só aceita dinheiro, e a abertura em 24/12 veio de diretório (confirmar com o local); Laguna del Diamante fora (abre em janeiro)
 - O roteiro original era sem vinícolas; vinícola só entra se alguém da família sugerir (ex.: a indicada pelos tios)
 
 ## Deploy

@@ -86,6 +86,105 @@ async function migrateAtividades(s) {
   await s.setJSON("meta/atividades-v1", { at: Date.now() });
 }
 
+// One-time (meta/situacao-v1): each stay gets three separate facts instead of the old single "status":
+// politica (reserva | chegada | confirmar), situacao (nao | aguardando | concluida) and pagStatus (nao | parcial | pago),
+// plus proximaAcao, regra and fonte. New fields are only filled when absent; old text is only replaced while it still
+// equals what the app first shipped with, so anything the family edited stays. A full backup is written first.
+const SITUACAO = {
+  suizo: { politica: "chegada", situacao: "aguardando", pagStatus: "nao",
+    proximaAcao: "Consultar vaga poucos dias antes de 21/12 e de 1/1. Mensagem enviada ao novo contato; aguardando retorno desde 11/11.",
+    regra: "Não aceita reserva: a vaga se consulta poucos dias antes. A indicação antiga de que em 1/1 costuma ter vaga depois das 20h precisa ser revalidada; não é garantia.",
+    fonte: "Resposta do camping em 6/10" },
+  rincon: { politica: "confirmar", situacao: "nao", pagStatus: "nao",
+    proximaAcao: "Perguntar de novo, uma pergunta por vez: precisa reservar? Tem vaga em 22 e 23/12? Aceita a Hilux com cabine camper?",
+    regra: "Regra de reserva, vaga, datas e Hilux ainda a confirmar. Pagar em dinheiro ou transferência no local não prova que dispensa reserva, e o \"Exacto\" não respondeu cada pergunta separadamente.",
+    fonte: "" },
+  pincheira: { politica: "confirmar", situacao: "nao", pagStatus: "nao",
+    proximaAcao: "Confirmar com o próprio local: abre no Natal (24/12)? Tem vaga? Precisa reservar?",
+    regra: "A abertura em 24/12 veio de um diretório, não do operador.",
+    fonte: "Diretório de campings (não é o operador)" },
+  payunia: { politica: "reserva", situacao: "nao", pagStatus: "nao",
+    proximaAcao: "Reservar e pagar o acampe no turnero ANP (actividadesanp.mendoza.gov.ar).",
+    regra: "Dormir no camper no acampe não exige guia. Vagas de dezembro não confirmadas: o turnero abre mês a mês, e consultar em 1/12 não garante que dezembro já esteja liberado nessa data.",
+    fonte: "Turismo Malargüe, 11/11" },
+  llancanelo: { politica: "reserva", situacao: "nao", pagStatus: "nao",
+    proximaAcao: "Reservar e pagar o acampe no turnero ANP (actividadesanp.mendoza.gov.ar).",
+    regra: "Dormir no camper no acampe não exige guia. Visitar o interior da reserva exige turno e guia contratado antes; o percurso autoguiado pela Ruta 186 fica fora da reserva. Vagas de dezembro não confirmadas: o turnero abre mês a mês.",
+    fonte: "Turismo Malargüe, 11/11" },
+  bosquecito: { politica: "chegada", situacao: "nao", pagStatus: "nao",
+    proximaAcao: "Confirmar o preço de dezembro, a forma de pagamento e os serviços para a Hilux (a tabela em PDF só vale até 30/11).",
+    regra: "Sem reserva, por ordem de chegada. Vaga não garantida.",
+    fonte: "E-mail de 11/11" },
+  ranquil: { politica: "chegada", situacao: "nao", pagStatus: "nao",
+    proximaAcao: "Nada a reservar: chegar e acertar no local. Ainda vale perguntar sobre o despejo.",
+    regra: "Sem reserva: chegar e acertar no local. Vaga específica não garantida.",
+    fonte: "Contato de 11/11" },
+  tipi: { politica: "reserva", situacao: "aguardando", pagStatus: "nao",
+    proximaAcao: "Cobrar de Martín os detalhes por escrito que ele prometeu e confirmar as duas noites (30 e 31/12), o preço, os serviços e o sinal.",
+    regra: "Reserva a combinar com Martín; nada foi concluído. Os 20% de sinal são referência de outubro, não condição atual confirmada.",
+    fonte: "Conversa com Martín, outubro" },
+  hotel: { politica: "reserva", situacao: "nao", pagStatus: "nao",
+    proximaAcao: "Escolher uma opção na aba Hotel e reservar.", regra: "", fonte: "" },
+};
+// [current value as first shipped, replacement]
+const TEXTO_ANTIGO = {
+  pernoites: {
+    tipi: { obs: ["Falar com Martin, o dono. Vaga confirmada para 30 e 31/12. Área de motorhome, água quente e acesso à cozinha. Sem chuveiro.",
+                  "Falar com Martín, o dono. Área de motorhome, água quente e acesso à cozinha. Sem chuveiro."],
+            pagamento: ["Sem cartão. Sinal de 20%", "Sem cartão"] },
+    ranquil: { pagamento: ["A confirmar", "Dinheiro ou transferência, no local"], horario: ["A confirmar", "Diária das 11h às 11h"] },
+    payunia: { obs: ["Área protegida, sem nenhum serviço. Guia obrigatório, agendado com a Municipalidade de Malargüe (telefone acima). Levar todo o lixo.",
+                     "Área protegida, sem nenhum serviço. Levar todo o lixo. O telefone é da Municipalidade de Malargüe, que agenda guias para os passeios."] },
+    pincheira: { obs: ["Abre em 24/12. 27 km de ripio. Banheiros, chuveiro quente, tomada, parrilla, piscinas, mercado e restaurante. Despejo crítico: se não tiver, usar posto em Malargüe.",
+                       "27 km de ripio. Banheiros, chuveiro quente, tomada, parrilla, piscinas, mercado e restaurante. Despejo crítico: se não tiver, usar posto em Malargüe."] },
+  },
+  dias: {
+    d25: { fazer: ["Circuito Los Volcanes com guia habilitado. Noite no acampe da seccional.",
+                   "Noite no acampe da seccional La Amarga (dormir no camper não exige guia). O circuito Los Volcanes é opcional."] },
+    d26: { fazer: ["Circuito parcial autoguiado (Pozos de Carpacho e Volcán Trapal). Flamingos.",
+                   "Noite no acampe da seccional El Sauce. Visitar o interior da reserva só com turno e guia contratado antes."] },
+  },
+  pendencias: {
+    p5: { titulo: ["Cotar o guia da Payunia e reservar o acampe", "Reservar e pagar o acampe de La Amarga (Payunia)"],
+          detalhe: ["Guia com a Municipalidade de Malargüe, (260) 4471659. Turno do acampe na Seccional La Amarga pelo portal.",
+                    "No turnero ANP (actividadesanp.mendoza.gov.ar). Dormir no camper não exige guia. O guia só entra se escolhermos o circuito Los Volcanes."] },
+    p6: { titulo: ["Reservar o turno do acampe no Llancanelo", "Reservar e pagar o acampe de El Sauce (Llancanelo)"],
+          detalhe: ["Pelo portal actividadesanp.mendoza.gov.ar.", "No turnero ANP (actividadesanp.mendoza.gov.ar). O turnero abre mês a mês."] },
+    p8: { titulo: ["Reservar Pincheira e confirmar o despejo", "Pincheira: confirmar abertura em 24/12, vaga, regra de reserva e despejo"] },
+    p9: { titulo: ["Reservar o camping do Atuel", "Rincón: confirmar regra de reserva, vaga, datas e Hilux"],
+          detalhe: ["Rincón de la Ensenada ou uma das alternativas.", "Perguntar uma coisa por vez. Se não der, ver as alternativas no Rincón."] },
+    p10: { titulo: ["Reservar Ranquil Luncay e confirmar o despejo", "Luncay: perguntar sobre o despejo (sem reserva)"] },
+  },
+};
+const ANTES_ATIV = {
+  "t-volcanes": "Se escolhido: contratar guia habilitado antes e reservar o turno do passeio. Não há circuito autoguiado nem guia esperando no local.",
+};
+async function migrateSituacao(s) {
+  const cur = await readAll(s);
+  const backup = { config: cur.config, motivo: "antes de meta/situacao-v1" };
+  COLLS.forEach((c, i) => { backup[c] = Object.values(cur.cols[i] || {}); });
+  await s.setJSON(`backup/${Date.now()}`, backup);
+  const col = Object.fromEntries(COLLS.map((c, i) => [c, cur.cols[i] || {}]));
+  const absent = (v) => v === undefined || v === null || v === "";
+  for (const [id, f] of Object.entries(SITUACAO)) {
+    const p = col.pernoites[id];
+    if (!p) continue;
+    for (const [k, v] of Object.entries(f)) if (absent(p[k]) && v !== "") p[k] = v;
+  }
+  for (const [c, byId] of Object.entries(TEXTO_ANTIGO))
+    for (const [id, fields] of Object.entries(byId)) {
+      const it = col[c][id];
+      if (!it) continue;
+      for (const [k, [old, next]] of Object.entries(fields)) if (it[k] === old) it[k] = next;
+    }
+  for (const [id, antes] of Object.entries(ANTES_ATIV)) {
+    const t = col.trilhas[id];
+    if (t && absent(t.antes)) t.antes = antes;
+  }
+  await Promise.all(["pernoites", "dias", "pendencias", "trilhas"].map((c) => s.setJSON(`col/${c}`, col[c])));
+  await s.setJSON("meta/situacao-v1", { at: Date.now() });
+}
+
 async function state() {
   const s = store();
   let { config, log, cols } = await readAll(s);
@@ -93,10 +192,13 @@ async function state() {
     await writeAll(s, toStored(seed));
     await s.setJSON("meta/seeded", { at: Date.now(), versao: seed.versao });
     await s.setJSON("meta/atividades-v1", { at: Date.now(), seed: true });
+    await s.setJSON("meta/situacao-v1", { at: Date.now(), seed: true });
     ({ config, log, cols } = await readAll(s));
-  } else if (!(await s.get("meta/atividades-v1", { type: "json" }))) {
-    await migrateAtividades(s);
-    ({ config, log, cols } = await readAll(s));
+  } else {
+    let changed = false;
+    if (!(await s.get("meta/atividades-v1", { type: "json" }))) { await migrateAtividades(s); changed = true; }
+    if (!(await s.get("meta/situacao-v1", { type: "json" }))) { await migrateSituacao(s); changed = true; }
+    if (changed) ({ config, log, cols } = await readAll(s));
   }
   const out = { config: config || {}, log: (log || []).slice(0, 60) };
   COLLS.forEach((c, i) => { out[c] = Object.values(cols[i] || {}); });

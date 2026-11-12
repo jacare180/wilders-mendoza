@@ -1,6 +1,6 @@
 {
-  "versao": 2,
-  "atualizado": "2026-11-03",
+  "versao": 3,
+  "atualizado": "2026-11-12",
   "config": {
     "nome": "Wilders em Mendoza",
     "pessoas": [
@@ -132,7 +132,7 @@
       "horas": "3h",
       "kmFonte": "pesquisa",
       "pernoite": "payunia",
-      "fazer": "Circuito Los Volcanes com guia habilitado. Noite no acampe da seccional.",
+      "fazer": "Noite no acampe da seccional La Amarga (dormir no camper não exige guia). O circuito Los Volcanes é opcional.",
       "avisos": [
         "Guia obrigatório: não existe circuito sem guia.",
         "Tarifa do parque é por veículo (ARS 46.700).",
@@ -151,7 +151,7 @@
       "horas": "3h",
       "kmFonte": "estimativa",
       "pernoite": "llancanelo",
-      "fazer": "Circuito parcial autoguiado (Pozos de Carpacho e Volcán Trapal). Flamingos.",
+      "fazer": "Noite no acampe da seccional El Sauce. Visitar o interior da reserva só com turno e guia contratado antes.",
       "avisos": [
         "O circuito completo exige guia; o parcial não."
       ],
@@ -314,7 +314,6 @@
       "tipo": "camping",
       "precoArs": 40000,
       "precoNota": "ARS 40.000 por noite para 3",
-      "status": "confirmado",
       "pagamento": "Cartão, Mercado Pago e transferência",
       "horario": "Checkout 11h",
       "telefone": "+54 9 261 654-4117",
@@ -324,7 +323,13 @@
       "despejo": "sim",
       "chuveiro": "sim",
       "obs": "Luz, água quente 24h, chuveiro, wifi, parrilla, piscina e mercadinho. Despejo de águas negras confirmado.",
-      "roteiro": ""
+      "roteiro": "",
+      "politica": "chegada",
+      "situacao": "aguardando",
+      "pagStatus": "nao",
+      "proximaAcao": "Consultar vaga poucos dias antes de 21/12 e de 1/1. Mensagem enviada ao novo contato; aguardando retorno desde 11/11.",
+      "regra": "Não aceita reserva: a vaga se consulta poucos dias antes. A indicação antiga de que em 1/1 costuma ter vaga depois das 20h precisa ser revalidada; não é garantia.",
+      "fonte": "Resposta do camping em 6/10"
     },
     {
       "id": "rincon",
@@ -333,7 +338,6 @@
       "tipo": "camping",
       "precoArs": 21000,
       "precoNota": "ARS ~21.000 por noite",
-      "status": "pendente",
       "pagamento": "A confirmar",
       "horario": "A confirmar",
       "telefone": "0260 4247379",
@@ -343,7 +347,12 @@
       "despejo": "confirmar",
       "chuveiro": "confirmar",
       "obs": "Aceita campervan. Alternativas: El Sauce km 25 (ARS 22.000 mais 12.500 por pessoa, 2604581068), Rio Azul km 33 (ARS 21.000 por dia, 260 4403457), Ayum Elum km 20,5 (ARS 18.500 por dia, 260 4538866).",
-      "roteiro": "Buenos días, quería reservar dos noches, 22 y 23 de diciembre, somos 3 personas con camioneta con cabina camper.\n\n1. ¿Tienen lugar para esas dos noches?\n2. ¿Cuánto sale por noche para 3 personas con el vehículo?\n3. ¿Tienen electricidad en la parcela, duchas con agua caliente y vaciado de aguas?\n4. ¿Hasta qué hora se puede llegar?\n5. ¿Hace falta señar? ¿Cómo se paga?"
+      "roteiro": "Buenos días, quería reservar dos noches, 22 y 23 de diciembre, somos 3 personas con camioneta con cabina camper.\n\n1. ¿Tienen lugar para esas dos noches?\n2. ¿Cuánto sale por noche para 3 personas con el vehículo?\n3. ¿Tienen electricidad en la parcela, duchas con agua caliente y vaciado de aguas?\n4. ¿Hasta qué hora se puede llegar?\n5. ¿Hace falta señar? ¿Cómo se paga?",
+      "politica": "confirmar",
+      "situacao": "nao",
+      "pagStatus": "nao",
+      "proximaAcao": "Perguntar de novo, uma pergunta por vez: precisa reservar? Tem vaga em 22 e 23/12? Aceita a Hilux com cabine camper?",
+      "regra": "Regra de reserva, vaga, datas e Hilux ainda a confirmar. Pagar em dinheiro ou transferência no local não prova que dispensa reserva, e o \"Exacto\" não respondeu cada pergunta separadamente."
     },
     {
       "id": "pincheira",
@@ -352,7 +361,6 @@
       "tipo": "camping",
       "precoArs": 35000,
       "precoNota": "ARS ~35.000 por noite",
-      "status": "pendente",
       "pagamento": "Só dinheiro",
       "horario": "Portaria fecha à noite (confirmar horário)",
       "telefone": "+54 9 260 460-0859",
@@ -361,8 +369,14 @@
       "agua": "sim",
       "despejo": "confirmar",
       "chuveiro": "sim",
-      "obs": "Abre em 24/12. 27 km de ripio. Banheiros, chuveiro quente, tomada, parrilla, piscinas, mercado e restaurante. Despejo crítico: se não tiver, usar posto em Malargüe.",
-      "roteiro": "Buenos días, quería reservar para la noche del 24 de diciembre, somos 3 personas con camioneta con cabina camper.\n\n1. ¿Confirman que abren el 24 de diciembre?\n2. ¿Tienen lugar para esa noche?\n3. ¿Tienen punto de vaciado de aguas grises y negras? ¿Se puede vaciar un casete?\n4. ¿Se puede cargar agua potable?\n5. ¿Cuánto sale la noche para 3 personas con el vehículo?\n6. ¿Hasta qué hora se puede llegar? El camino de 27 km es de ripio, ¿cómo está?\n7. ¿Es solo efectivo o aceptan transferencia?"
+      "obs": "27 km de ripio. Banheiros, chuveiro quente, tomada, parrilla, piscinas, mercado e restaurante. Despejo crítico: se não tiver, usar posto em Malargüe.",
+      "roteiro": "Buenos días, quería reservar para la noche del 24 de diciembre, somos 3 personas con camioneta con cabina camper.\n\n1. ¿Confirman que abren el 24 de diciembre?\n2. ¿Tienen lugar para esa noche?\n3. ¿Tienen punto de vaciado de aguas grises y negras? ¿Se puede vaciar un casete?\n4. ¿Se puede cargar agua potable?\n5. ¿Cuánto sale la noche para 3 personas con el vehículo?\n6. ¿Hasta qué hora se puede llegar? El camino de 27 km es de ripio, ¿cómo está?\n7. ¿Es solo efectivo o aceptan transferencia?",
+      "politica": "confirmar",
+      "situacao": "nao",
+      "pagStatus": "nao",
+      "proximaAcao": "Confirmar com o próprio local: abre no Natal (24/12)? Tem vaga? Precisa reservar?",
+      "regra": "A abertura em 24/12 veio de um diretório, não do operador.",
+      "fonte": "Diretório de campings (não é o operador)"
     },
     {
       "id": "payunia",
@@ -371,7 +385,6 @@
       "tipo": "reserva",
       "precoArs": 35100,
       "precoNota": "ARS 11.700 por pessoa por dia (tarifa oficial)",
-      "status": "a reservar",
       "pagamento": "Turno online",
       "horario": "Entrada a partir das 18h, saída até 12h",
       "telefone": "(260) 4471659",
@@ -380,8 +393,14 @@
       "agua": "nao",
       "despejo": "nao",
       "chuveiro": "nao",
-      "obs": "Área protegida, sem nenhum serviço. Guia obrigatório, agendado com a Municipalidade de Malargüe (telefone acima). Levar todo o lixo.",
-      "roteiro": "Buenos días, somos 3 personas con una camioneta 4x4 propia y queremos visitar La Payunia el 25 de diciembre, y acampar en la Seccional La Amarga.\n\n1. ¿Podemos entrar con nuestra propia 4x4 contratando solo el guía habilitado?\n2. ¿Cuánto sale el guía por el día? ¿Nos acompaña en nuestro vehículo o va en el suyo?\n3. ¿Confirman que la tarifa del parque es por vehículo y no por persona?\n4. ¿Cómo se saca el turno para el acampe en La Amarga y cuánto sale por persona?\n5. ¿Hay agua en la seccional? ¿Qué hay que llevar?\n6. ¿En qué estado está el camino de ripio en diciembre?"
+      "obs": "Área protegida, sem nenhum serviço. Levar todo o lixo. O telefone é da Municipalidade de Malargüe, que agenda guias para os passeios.",
+      "roteiro": "Buenos días, somos 3 personas con una camioneta 4x4 propia y queremos visitar La Payunia el 25 de diciembre, y acampar en la Seccional La Amarga.\n\n1. ¿Podemos entrar con nuestra propia 4x4 contratando solo el guía habilitado?\n2. ¿Cuánto sale el guía por el día? ¿Nos acompaña en nuestro vehículo o va en el suyo?\n3. ¿Confirman que la tarifa del parque es por vehículo y no por persona?\n4. ¿Cómo se saca el turno para el acampe en La Amarga y cuánto sale por persona?\n5. ¿Hay agua en la seccional? ¿Qué hay que llevar?\n6. ¿En qué estado está el camino de ripio en diciembre?",
+      "politica": "reserva",
+      "situacao": "nao",
+      "pagStatus": "nao",
+      "proximaAcao": "Reservar e pagar o acampe no turnero ANP (actividadesanp.mendoza.gov.ar).",
+      "regra": "Dormir no camper no acampe não exige guia. Vagas de dezembro não confirmadas: o turnero abre mês a mês, e consultar em 1/12 não garante que dezembro já esteja liberado nessa data.",
+      "fonte": "Turismo Malargüe, 11/11"
     },
     {
       "id": "llancanelo",
@@ -390,7 +409,6 @@
       "tipo": "reserva",
       "precoArs": 14100,
       "precoNota": "ARS 4.700 por pessoa por dia (tarifa oficial)",
-      "status": "a reservar",
       "pagamento": "Turno online",
       "horario": "Confirmar no turno",
       "telefone": "(260) 4801708",
@@ -400,7 +418,13 @@
       "despejo": "nao",
       "chuveiro": "nao",
       "obs": "Área protegida, sem serviço. Telefone é do Turismo Malargüe. A 60 a 75 km de Malargüe, já no sentido da volta.",
-      "roteiro": ""
+      "roteiro": "",
+      "politica": "reserva",
+      "situacao": "nao",
+      "pagStatus": "nao",
+      "proximaAcao": "Reservar e pagar o acampe no turnero ANP (actividadesanp.mendoza.gov.ar).",
+      "regra": "Dormir no camper no acampe não exige guia. Visitar o interior da reserva exige turno e guia contratado antes; o percurso autoguiado pela Ruta 186 fica fora da reserva. Vagas de dezembro não confirmadas: o turnero abre mês a mês.",
+      "fonte": "Turismo Malargüe, 11/11"
     },
     {
       "id": "bosquecito",
@@ -409,7 +433,6 @@
       "tipo": "camping",
       "precoArs": 39000,
       "precoNota": "ARS 13.000 por adulto (confirmar se é por dia ou por noite)",
-      "status": "pendente",
       "pagamento": "A confirmar",
       "horario": "A confirmar",
       "telefone": "+54 9 261 712-0085",
@@ -419,7 +442,13 @@
       "despejo": "confirmar",
       "chuveiro": "confirmar",
       "obs": "Antigo camping do ACA, hoje da UNCUYO. Alternativas: El Montañés (0261) 4218543 e Las Chacritas.",
-      "roteiro": ""
+      "roteiro": "",
+      "politica": "chegada",
+      "situacao": "nao",
+      "pagStatus": "nao",
+      "proximaAcao": "Confirmar o preço de dezembro, a forma de pagamento e os serviços para a Hilux (a tabela em PDF só vale até 30/11).",
+      "regra": "Sem reserva, por ordem de chegada. Vaga não garantida.",
+      "fonte": "E-mail de 11/11"
     },
     {
       "id": "ranquil",
@@ -428,9 +457,8 @@
       "tipo": "camping",
       "precoArs": 25000,
       "precoNota": "ARS ~25.000 por noite",
-      "status": "pendente",
-      "pagamento": "A confirmar",
-      "horario": "A confirmar",
+      "pagamento": "Dinheiro ou transferência, no local",
+      "horario": "Diária das 11h às 11h",
       "telefone": "02624 420421",
       "email": "",
       "link": "",
@@ -438,7 +466,13 @@
       "despejo": "confirmar",
       "chuveiro": "sim",
       "obs": "Chuveiro quente, luz e aceita motorhome confirmados. Substitui o municipal, que está em reforma.",
-      "roteiro": "Buenos días, quería reservar para el 29 de diciembre, somos 3 personas con una camioneta con cabina camper.\n\n1. ¿Tienen lugar para el 29 de diciembre?\n2. ¿Tienen punto de vaciado de aguas grises y de aguas negras? ¿Dónde está?\n3. ¿Se puede vaciar un casete de baño químico? ¿Dónde?\n4. ¿Hay toma de electricidad en la parcela? ¿De cuántos amperes?\n5. ¿Las duchas tienen agua caliente a toda hora?\n6. ¿Cuánto sale la noche para 3 personas con el vehículo?\n7. ¿Hasta qué hora se puede llegar? ¿Hay horario límite de ingreso?\n8. ¿Cómo se paga, aceptan tarjeta, transferencia o solo efectivo?\n9. ¿Hace falta señar la reserva?"
+      "roteiro": "Buenos días, quería reservar para el 29 de diciembre, somos 3 personas con una camioneta con cabina camper.\n\n1. ¿Tienen lugar para el 29 de diciembre?\n2. ¿Tienen punto de vaciado de aguas grises y de aguas negras? ¿Dónde está?\n3. ¿Se puede vaciar un casete de baño químico? ¿Dónde?\n4. ¿Hay toma de electricidad en la parcela? ¿De cuántos amperes?\n5. ¿Las duchas tienen agua caliente a toda hora?\n6. ¿Cuánto sale la noche para 3 personas con el vehículo?\n7. ¿Hasta qué hora se puede llegar? ¿Hay horario límite de ingreso?\n8. ¿Cómo se paga, aceptan tarjeta, transferencia o solo efectivo?\n9. ¿Hace falta señar la reserva?",
+      "politica": "chegada",
+      "situacao": "nao",
+      "pagStatus": "nao",
+      "proximaAcao": "Nada a reservar: chegar e acertar no local. Ainda vale perguntar sobre o despejo.",
+      "regra": "Sem reserva: chegar e acertar no local. Vaga específica não garantida.",
+      "fonte": "Contato de 11/11"
     },
     {
       "id": "tipi",
@@ -447,8 +481,7 @@
       "tipo": "montanha",
       "precoArs": 65000,
       "precoNota": "ARS 60.000 a 70.000 por noite",
-      "status": "confirmado",
-      "pagamento": "Sem cartão. Sinal de 20%",
+      "pagamento": "Sem cartão",
       "horario": "Check-in 12h, checkout 13h a 14h",
       "telefone": "+54 9 261 334-1150",
       "email": "",
@@ -456,8 +489,14 @@
       "agua": "sim",
       "despejo": "nao",
       "chuveiro": "nao",
-      "obs": "Falar com Martin, o dono. Vaga confirmada para 30 e 31/12. Área de motorhome, água quente e acesso à cozinha. Sem chuveiro.",
-      "roteiro": ""
+      "obs": "Falar com Martín, o dono. Área de motorhome, água quente e acesso à cozinha. Sem chuveiro.",
+      "roteiro": "",
+      "politica": "reserva",
+      "situacao": "aguardando",
+      "pagStatus": "nao",
+      "proximaAcao": "Cobrar de Martín os detalhes por escrito que ele prometeu e confirmar as duas noites (30 e 31/12), o preço, os serviços e o sinal.",
+      "regra": "Reserva a combinar com Martín; nada foi concluído. Os 20% de sinal são referência de outubro, não condição atual confirmada.",
+      "fonte": "Conversa com Martín, outubro"
     },
     {
       "id": "hotel",
@@ -466,7 +505,6 @@
       "tipo": "hotel",
       "precoArs": null,
       "precoNota": "A escolher na aba Hotel",
-      "status": "a reservar",
       "pagamento": "",
       "horario": "",
       "telefone": "",
@@ -476,7 +514,11 @@
       "despejo": "",
       "chuveiro": "sim",
       "obs": "Noites de 02 e 03/01. Veja as opções na aba Hotel.",
-      "roteiro": ""
+      "roteiro": "",
+      "politica": "reserva",
+      "situacao": "nao",
+      "pagStatus": "nao",
+      "proximaAcao": "Escolher uma opção na aba Hotel e reservar."
     }
   ],
   "trilhas": [
@@ -544,17 +586,18 @@
       "leve": "",
       "obs": "Quase todo de carro, com 6 paradas curtas a pé. Guia habilitado obrigatório.",
       "dia": "d25",
-      "status": "roteiro",
+      "status": "ideia",
       "preco": 600,
       "moeda": "BRL",
       "base": "grupo",
       "pago": false,
-      "precoNota": "Falta cotar"
+      "precoNota": "Falta cotar",
+      "antes": "Se escolhido: contratar guia habilitado antes e reservar o turno do passeio. Não há circuito autoguiado nem guia esperando no local."
     },
     {
       "id": "t-payunia-parque",
       "tipo": "outro",
-      "nome": "La Payunia: tarifa do parque",
+      "nome": "La Payunia: ingresso do circuito Los Volcanes",
       "onde": "La Payunia",
       "km": "",
       "desnivel": "",
@@ -562,9 +605,9 @@
       "nivel": 0,
       "quem": "todos",
       "leve": "",
-      "obs": "Paga uma vez por veículo.",
+      "obs": "Paga uma vez por veículo. Só se escolhermos o circuito.",
       "dia": "d25",
-      "status": "roteiro",
+      "status": "ideia",
       "preco": 46700,
       "moeda": "ARS",
       "base": "grupo",
@@ -574,17 +617,17 @@
     {
       "id": "t-llancanelo",
       "tipo": "trilha",
-      "nome": "Circuito parcial autoguiado",
-      "onde": "Laguna de Llancanelo",
+      "nome": "Percurso pela Ruta 186",
+      "onde": "Ruta 186, perto de Llancanelo",
       "km": "",
       "desnivel": "",
       "tempo": "Caminhadas curtas",
       "nivel": 1,
       "quem": "todos",
       "leve": "",
-      "obs": "Pozos de Carpacho e Volcán Trapal. Flamingos. Sem guia.",
+      "obs": "Fora da reserva: não é circuito interno. Flamingos de longe.",
       "dia": "d26",
-      "status": "roteiro",
+      "status": "ideia",
       "preco": 75,
       "moeda": "BRL",
       "base": "grupo",
@@ -1038,15 +1081,15 @@
     },
     {
       "id": "p5",
-      "titulo": "Cotar o guia da Payunia e reservar o acampe",
-      "detalhe": "Guia com a Municipalidade de Malargüe, (260) 4471659. Turno do acampe na Seccional La Amarga pelo portal.",
+      "titulo": "Reservar e pagar o acampe de La Amarga (Payunia)",
+      "detalhe": "No turnero ANP (actividadesanp.mendoza.gov.ar). Dormir no camper não exige guia. O guia só entra se escolhermos o circuito Los Volcanes.",
       "prioridade": "alta",
       "pernoite": "payunia"
     },
     {
       "id": "p6",
-      "titulo": "Reservar o turno do acampe no Llancanelo",
-      "detalhe": "Pelo portal actividadesanp.mendoza.gov.ar.",
+      "titulo": "Reservar e pagar o acampe de El Sauce (Llancanelo)",
+      "detalhe": "No turnero ANP (actividadesanp.mendoza.gov.ar). O turnero abre mês a mês.",
       "prioridade": "alta",
       "pernoite": "llancanelo"
     },
@@ -1059,21 +1102,21 @@
     },
     {
       "id": "p8",
-      "titulo": "Reservar Pincheira e confirmar o despejo",
+      "titulo": "Pincheira: confirmar abertura em 24/12, vaga, regra de reserva e despejo",
       "detalhe": "Noite de Natal. Só dinheiro.",
       "prioridade": "alta",
       "pernoite": "pincheira"
     },
     {
       "id": "p9",
-      "titulo": "Reservar o camping do Atuel",
-      "detalhe": "Rincón de la Ensenada ou uma das alternativas.",
+      "titulo": "Rincón: confirmar regra de reserva, vaga, datas e Hilux",
+      "detalhe": "Perguntar uma coisa por vez. Se não der, ver as alternativas no Rincón.",
       "prioridade": "normal",
       "pernoite": "rincon"
     },
     {
       "id": "p10",
-      "titulo": "Reservar Ranquil Luncay e confirmar o despejo",
+      "titulo": "Luncay: perguntar sobre o despejo (sem reserva)",
       "detalhe": "",
       "prioridade": "normal",
       "pernoite": "ranquil"
