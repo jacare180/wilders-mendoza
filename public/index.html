@@ -387,6 +387,7 @@ details.script pre{white-space:pre-wrap;font-family:var(--f-body);font-size:16px
 .pick button .t{flex:1;min-width:0}
 .pick button small{color:var(--mute);display:block;font-size:14px}
 .pick button[disabled]{opacity:.4}
+.pick button > svg{width:24px;height:24px;flex:none;color:var(--mute)}
 .who-pick{display:grid;grid-template-columns:1fr;gap:10px}
 .who-pick button{border:1px solid var(--line);background:var(--bg);border-radius:16px;padding:20px 10px;font-family:var(--f-display);font-weight:800;font-size:28px}
 .who-pick button:hover,.who-pick button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
@@ -768,28 +769,37 @@ function dayCard(x,compact,i,len){
   const tipo=p?p.tipo:"";
   const leg=x.para?`<div class="leg"><span>${I.car}${x.de?esc(x.de)+" → ":""}<b>${esc(x.para)}</b></span>${+x.km?`<span><b>${fmt(x.km)} km</b>${x.horas?" · "+esc(x.horas):""}</span>`:""}${x.kmFonte==="estimativa"&&+x.km?`<span class="tag">estimativa</span>`:""}</div>`:(+x.km?`<div class="leg"><span>${I.car}${fmt(x.km)} km${x.horas?" · "+esc(x.horas):""}</span></div>`:`<div class="leg">Sem deslocamento</div>`);
   // what still has to happen before we get there: the stay's next step once (first night), then bookings for planned activities
-  const antes=[];
-  if(p&&!repeat&&sit(p)!=="concluida"){
+  // the family writes notes as "ANTES DA VIAGEM: …", "NO DIA: …", "RESERVA DO X: …"; each goes to its block, without the label
+  const nt={antes:[],dia:[],vaga:[],opc:[]};
+  for(const a of x.avisos||[]){
+    const m=String(a).match(/^\s*([A-ZÀ-Ú ]{3,40}?(?: D[OAE]S? [A-ZÀ-Ú ]{2,30})?)\s*:\s*(.+)$/s);
+    const k=m?m[1].trim():"";
+    const to=/^ANTES/.test(k)?"antes":/^NO DIA/.test(k)?"dia":/^(RESERVA|PARA DORMIR|PERNOITE|VAGA)/.test(k)?"vaga":/^PASSEIOS? OPCIONA/.test(k)?"opc":null;
+    if(to){const t=m[2].trim();nt[to].push(t.charAt(0).toUpperCase()+t.slice(1))}else nt.dia.push(a);
+  }
+  const antes=[...nt.antes];
+  // the stay's own next step only when the day's notes do not already say what to do before
+  if(p&&!repeat&&sit(p)!=="concluida"&&!antes.length){
     if(p.proximaAcao)antes.push(p.proximaAcao);
     else D().pendencias.filter(q=>q.pernoite===p.id&&!q.feito).forEach(q=>antes.push(q.titulo));
   }
   plan.filter(t=>t.antes).forEach(t=>antes.push(`${t.nome}: ${t.antes}`));
   const blk=(title,body)=>body?`<div class="blk"><div class="blk-h">${title}</div>${body}</div>`:"";
   const antesHtml=antes.length?`<ol class="acts">${antes.map((a,k)=>`<li${k===0?' class="next"':""}>${k===0?'<span class="k">Próxima ação</span>':""}${esc(a)}</li>`).join("")}</ol>`:"";
-  const noDia=[x.fazer?`<p>${esc(x.fazer)}</p>`:"",plan.length?`<div class="progs">${plan.map(progRow).join("")}</div>`:"",
-    (x.avisos||[]).length?`<ul class="notes">${x.avisos.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:""].join("");
+  const notes=l=>l.length?`<ul class="notes">${l.map(a=>`<li>${esc(a)}</li>`).join("")}</ul>`:"";
+  const noDia=[x.fazer?`<p>${esc(x.fazer)}</p>`:"",plan.length?`<div class="progs">${plan.map(progRow).join("")}</div>`:"",notes(nt.dia)].join("");
   const sleep=p?`<div class="sleep ${esc(tipo)}">
       <div class="top-l"><span class="tag ${tipo==="reserva"?"res":tipo==="montanha"?"mtn":tipo==="hotel"?"sky":""}">${esc(TIPOS[tipo]||tipo)}</span>${p.precoArs===0?`<span class="tag ok">Grátis</span>`:""}</div>
       <h4>${esc(h?h.nome:p.nome)}${p.lugar&&!h?` <span class="muted" style="font-weight:400">· ${esc(p.lugar)}</span>`:""}</h4>
       <div class="stay-tags">${stayTags(p)}</div>
       ${repeat?`<div class="muted small">Mesmo pernoite da noite de ${dm(first.date)}: o que falta está lá.</div>`:`
-      ${p.regra?`<div class="small">${esc(p.regra)}</div>`:""}
+      ${nt.vaga.length?notes(nt.vaga).replace('class="notes"','class="notes" style="margin:0"'):p.regra?`<div class="small">${esc(p.regra)}</div>`:""}
       ${p.precoArs?`<div class="meta"><span>${ars(p.precoArs)} por noite (${brl(toBRL(p.precoArs,"ARS"))})</span>${p.pagamento?`<span>${esc(p.pagamento)}</span>`:""}</div>`:p.pagamento?`<div class="meta"><span>${esc(p.pagamento)}</span></div>`:""}
       ${p.horario?`<div class="meta"><span>${I.clock}${esc(p.horario)}</span></div>`:""}
       ${svcHtml(p)}`}
       <div class="row">${p.telefone?`<a class="btn sm" href="${telHref(p.telefone)}">${I.phone}Ligar</a>`:""}${waHref(p.telefone)?`<a class="btn sm" href="${waHref(p.telefone)}" target="_blank" rel="noopener">${I.chat}WhatsApp</a>`:""}<a class="btn sm ghost" href="${esc(mapsHref((h?h.nome:p.nome)+" "+(p.lugar||"Mendoza")))}" target="_blank" rel="noopener">${I.pin}Mapa</a><button class="btn sm ghost" type="button" data-stay="${esc(p.id)}">Detalhes</button></div>
     </div>`:x.fase==="volta"?`<div class="sleep hotel"><h4>${esc(C().voo?.volta||"Voo de volta")}</h4></div>`:"";
-  const optHtml=opts.length?`<div class="progs">${opts.map(t=>progRow(t)+(t.antes?`<div class="opt-antes">${esc(t.antes)}</div>`:"")).join("")}</div>`:"";
+  const optHtml=(opts.length?`<div class="progs">${opts.map(t=>progRow(t)+(t.antes?`<div class="opt-antes">${esc(t.antes)}</div>`:"")).join("")}</div>`:"")+notes(nt.opc);
   const flexTag=x.coringa?`<span class="tag sky" title="Dia que pode ser trocado, encurtado ou usado se o tempo virar">Dia coringa</span>`:"";
   const canMove=x.fase==="camper"&&!compact;
   return `<section class="card day${isToday?" today":""}${x.coringa?" flex":""}" id="dia-${esc(x.id)}">

@@ -98,7 +98,7 @@ const SITUACAO = {
   rincon: { politica: "confirmar", situacao: "nao", pagStatus: "nao",
     proximaAcao: "Perguntar de novo, uma pergunta por vez: precisa reservar? Tem vaga em 22 e 23/12? Aceita a Hilux com cabine camper?",
     regra: "Regra de reserva, vaga, datas e Hilux ainda a confirmar. Pagar em dinheiro ou transferência no local não prova que dispensa reserva, e o \"Exacto\" não respondeu cada pergunta separadamente.",
-    fonte: "" },
+    fonte: "WhatsApp de 11/11" },
   pincheira: { politica: "confirmar", situacao: "nao", pagStatus: "nao",
     proximaAcao: "Confirmar com o próprio local: abre no Natal (24/12)? Tem vaga? Precisa reservar?",
     regra: "A abertura em 24/12 veio de um diretório, não do operador.",
@@ -122,7 +122,7 @@ const SITUACAO = {
   tipi: { politica: "reserva", situacao: "aguardando", pagStatus: "nao",
     proximaAcao: "Cobrar de Martín os detalhes por escrito que ele prometeu e confirmar as duas noites (30 e 31/12), o preço, os serviços e o sinal.",
     regra: "Reserva a combinar com Martín; nada foi concluído. Os 20% de sinal são referência de outubro, não condição atual confirmada.",
-    fonte: "Conversa com Martín, outubro" },
+    fonte: "Áudio de Martín, 11/11 (prometeu os detalhes por escrito)" },
   hotel: { politica: "reserva", situacao: "nao", pagStatus: "nao",
     proximaAcao: "Escolher uma opção na aba Hotel e reservar.", regra: "", fonte: "" },
 };
@@ -154,10 +154,13 @@ const TEXTO_ANTIGO = {
     p9: { titulo: ["Reservar o camping do Atuel", "Rincón: confirmar regra de reserva, vaga, datas e Hilux"],
           detalhe: ["Rincón de la Ensenada ou uma das alternativas.", "Perguntar uma coisa por vez. Se não der, ver as alternativas no Rincón."] },
     p10: { titulo: ["Reservar Ranquil Luncay e confirmar o despejo", "Luncay: perguntar sobre o despejo (sem reserva)"] },
+    p7: { detalhe: ["Só cartão e com antecedência: o parque não vende na hora.",
+                    "Turno online antecipado, pago por cupom (Pago Fácil ou Mercado Pago). Não vendem na entrada."] },
+    p11: { detalhe: ["ARS 13.000 por adulto é por dia ou por noite?", "Valor de dezembro pendente: a tabela em PDF só vale até 30/11."] },
   },
-};
-const ANTES_ATIV = {
-  "t-volcanes": "Se escolhido: contratar guia habilitado antes e reservar o turno do passeio. Não há circuito autoguiado nem guia esperando no local.",
+  checklist: {
+    c7: { texto: ["Cartão de crédito (o Aconcágua só aceita cartão)", "Cartão de crédito"] },
+  },
 };
 async function migrateSituacao(s) {
   const cur = await readAll(s);
@@ -177,11 +180,7 @@ async function migrateSituacao(s) {
       if (!it) continue;
       for (const [k, [old, next]] of Object.entries(fields)) if (it[k] === old) it[k] = next;
     }
-  for (const [id, antes] of Object.entries(ANTES_ATIV)) {
-    const t = col.trilhas[id];
-    if (t && absent(t.antes)) t.antes = antes;
-  }
-  await Promise.all(["pernoites", "dias", "pendencias", "trilhas"].map((c) => s.setJSON(`col/${c}`, col[c])));
+  await Promise.all(["pernoites", "dias", "pendencias", "checklist"].map((c) => s.setJSON(`col/${c}`, col[c])));
   await s.setJSON("meta/situacao-v1", { at: Date.now() });
 }
 
