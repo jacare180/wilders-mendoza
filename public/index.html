@@ -1000,15 +1000,20 @@ function listaCheck(){
 function todoRow(p,compact){
   const pr=PRIOS.find(x=>x[0]===p.prioridade)||PRIOS[2]; const st=p.pernoite?stayOf(p.pernoite):null;
   return `<div class="todo${p.feito?" done":""}"><button class="box" type="button" role="checkbox" aria-checked="${!!p.feito}" data-done="${esc(p.id)}" aria-label="${esc(p.titulo)}">${I.check}</button>
-    <div class="t"><div class="row" style="gap:6px">${pr[0]!=="normal"&&!p.feito?`<span class="tag ${pr[2]}">${pr[1]}</span>`:""}<b>${esc(p.titulo)}</b></div>
+    <div class="t"><div class="row" style="gap:6px">${pr[0]!=="normal"&&!p.feito?`<span class="tag ${pr[2]}">${pr[1]}</span>`:""}${p.resp&&!p.feito?`<span class="tag sky">${I.users}${esc(p.resp===S.me?"Com você":"Com "+p.resp)}</span>`:""}<b>${esc(p.titulo)}</b></div>
       ${!compact&&p.detalhe?`<p>${esc(p.detalhe)}</p>`:""}
       ${!compact&&st&&st.telefone&&!p.feito?`<div class="row" style="margin-top:8px"><a class="btn sm" href="${telHref(st.telefone)}">${I.phone}${esc(st.nome)}</a>${st.roteiro?`<button class="btn sm ghost" type="button" data-stay="${esc(st.id)}">O que perguntar</button>`:""}</div>`:""}
       ${p.feito?`<p class="by">Feito por ${esc(p.feitoPor||"?")}${p.feitoEm?" "+ago(p.feitoEm):""}</p>`:p.by?`<p class="by">Adicionado por ${esc(p.by)}</p>`:""}
     </div>${compact?"":`<button class="x2 btn ghost icon" type="button" data-edittodo="${esc(p.id)}" aria-label="Editar">${I.edit}</button>`}</div>`;
 }
 function listaTodo(){
-  const all=D().pendencias.slice().sort(prioSort); const open=all.filter(p=>!p.feito), done=all.filter(p=>p.feito);
+  const f=S.todoFilter||"todas";
+  const pick=p=>f==="todas"||(f==="ninguem"?!p.resp:p.resp===f);
+  const all=D().pendencias.slice().sort(prioSort); const open=all.filter(p=>!p.feito&&pick(p)), done=all.filter(p=>p.feito&&pick(p));
+  const cnt=g=>D().pendencias.filter(p=>!p.feito&&(g==="ninguem"?!p.resp:p.resp===g)).length;
+  const chips=[["todas","Todas"],...PEOPLE().map(n=>[n,`${n===S.me?"Minhas":n} (${cnt(n)})`]),["ninguem",`Sem responsável (${cnt("ninguem")})`]];
   return `<div class="row" style="margin-bottom:14px"><button class="btn primary" type="button" data-act="newtodo">${I.plus}Nova pendência</button></div>
+  <div class="chips" role="group" aria-label="Filtrar por responsável">${chips.map(([k,l])=>`<button class="chip" type="button" data-todof="${esc(k)}" aria-pressed="${f===k}">${esc(l)}</button>`).join("")}</div>
   ${open.length?`<div class="card">${open.map(p=>todoRow(p)).join("")}</div>`:`<div class="empty"><b>Tudo resolvido</b>Nenhuma pendência aberta.</div>`}
   ${done.length?`<div class="section"><div class="section-head"><h2>Feitas</h2></div><div class="card">${done.map(p=>todoRow(p)).join("")}</div></div>`:""}`;
 }
@@ -1104,6 +1109,7 @@ document.getElementById("main").addEventListener("click",e=>{
   else if(ds.edittrail)trailSheet(ds.edittrail);
   else if(ds.tf){S.trailFilter=ds.tf;render()}
   else if(ds.promote)promote(ds.promote);
+  else if(ds.todof){S.todoFilter=ds.todof;render()}
   else if(ds.tick){const c=D().checklist.find(x=>x.id===ds.tick);if(c)upd("checklist",c.id,c.feito?{feito:false,feitoPor:null}:{feito:true,feitoPor:S.me})}
   else if(ds.delcheck){const c=D().checklist.find(x=>x.id===ds.delcheck);if(c&&del("checklist",c.id,`tirou "${c.texto}" da lista`))toast("Item apagado",()=>setItem("checklist",c.id,c,`devolveu "${c.texto}" para a lista`))}
   else if(ds.done){const p=D().pendencias.find(x=>x.id===ds.done);if(p)upd("pendencias",p.id,p.feito?{feito:false,feitoPor:null,feitoEm:null}:{feito:true,feitoPor:S.me,feitoEm:Date.now()},p.feito?`reabriu a pendência "${p.titulo}"`:`resolveu "${p.titulo}"`)}
@@ -1304,10 +1310,15 @@ function todoSheet(id){
     <div class="field"><label for="o-d">Detalhe</label><textarea id="o-d">${esc(p.detalhe||"")}</textarea></div>
     <div class="frow"><div class="field"><label for="o-p">Prioridade</label><select id="o-p">${opt(PRIOS.map(x=>[x[0],x[1]]),p.prioridade)}</select></div>
       <div class="field"><label for="o-s">Ligado a</label><select id="o-s"><option value="">Nada</option>${opt(D().pernoites.map(x=>[x.id,x.nome]),p.pernoite)}</select></div></div>
+    <div class="field"><label for="o-r">Quem cuida</label><select id="o-r"><option value="">Ninguém ainda</option>${opt(PEOPLE().map(n=>[n,n]),p.resp)}</select></div>
     <div class="row"><button class="btn primary" type="submit">Salvar</button>${id?`<button class="btn ghost right" type="button" id="odel" style="color:var(--l3)">${I.trash}Apagar</button>`:""}</div></form>`,
   el=>{el.querySelector("#of").addEventListener("submit",e=>{e.preventDefault();
-      const next={...p,titulo:val(el,"o-t"),detalhe:val(el,"o-d"),prioridade:val(el,"o-p"),pernoite:val(el,"o-s")};if(!id){next.by=S.me;next.criado=Date.now()}delete next.id;closeSheet();
-      if(setItem("pendencias",id||"p"+rid(),next,id?`editou a pendência "${next.titulo}"`:`adicionou a pendência "${next.titulo}"`))toast("Salvo")});
+      const form={titulo:val(el,"o-t"),detalhe:val(el,"o-d"),prioridade:val(el,"o-p"),pernoite:val(el,"o-s"),resp:val(el,"o-r")};closeSheet();
+      const to=form.resp?(form.resp===S.me?" e ficou com ela":` para ${form.resp}`):"";
+      if(!id){if(setItem("pendencias","p"+rid(),{...form,by:S.me,criado:Date.now()},`adicionou a pendência "${form.titulo}"${to}`))toast("Salvo");return}
+      const diff=Object.fromEntries(Object.entries(form).filter(([k,v])=>(p[k]??"")!==v));if(!Object.keys(diff).length)return;
+      const log="resp" in diff&&Object.keys(diff).length===1?(!form.resp?`tirou o responsável de "${form.titulo}"`:form.resp===S.me?`ficou com "${form.titulo}"`:`passou "${form.titulo}" para ${form.resp}`):`editou a pendência "${form.titulo}"${"resp" in diff?to:""}`;
+      if(upd("pendencias",id,diff,log))toast("Salvo")});
     const dl=el.querySelector("#odel");if(dl)dl.onclick=()=>{closeSheet();if(del("pendencias",id,`apagou a pendência "${p.titulo}"`))toast("Apagada",()=>{const{id:_,...r}=p;setItem("pendencias",id,r,`devolveu a pendência "${p.titulo}"`)})};});
 }
 function costSheet(id){
